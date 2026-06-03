@@ -1,5 +1,6 @@
 import "./marketing.css";
 import SmoothScroll from "./SmoothScroll";
+import PageTransition from "./PageTransition";
 
 export default function MarketingLayout({
   children,
@@ -25,6 +26,7 @@ export default function MarketingLayout({
       {/* Scroll suave en todo el sitio. El preloader vive solo en las
           páginas que cargan datos (catálogo y portal). */}
       <SmoothScroll />
+      <PageTransition />
       {children}
     </>
   );

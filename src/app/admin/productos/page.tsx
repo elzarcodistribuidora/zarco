@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { updateProducto } from "../actions";
 import { RowForm } from "../ui/RowForm";
 import { SaveButton } from "../ui/SaveButton";
+import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { IconSearch } from "../ui/icons";
 
 const LIMIT = 100;
@@ -99,12 +100,10 @@ export default async function ProductosAdmin({
                       defaultValue={Number(p.precio_final)}
                       className="rounded-md border border-slate-200 px-2 py-1.5 text-right outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
                     />
-                    <input
+                    <ToggleSwitch
                       name="web"
-                      type="checkbox"
                       defaultChecked={p.web}
-                      className="mx-auto h-5 w-5 cursor-pointer accent-[#0A2240]"
-                      title="Activado para web"
+                      title="Mostrar en la web"
                     />
                     <SaveButton className="px-3 py-1.5 text-xs" />
                   </RowForm>

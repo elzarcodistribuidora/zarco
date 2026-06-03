@@ -66,6 +66,25 @@ html.wf-anim .navbar {
   animation: wf-enter-fade 0.6s var(--expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
 }
 
+/* --- Transición entre páginas (cross-fade) ---
+   El sitio navega con recarga completa; este fade tapa el parpadeo blanco.
+   Entrada: la página aparece con un fade rápido (la animación arranca antes
+   del primer paint, sin `both` para no pisar el fade-out de salida).
+   Salida: `PageTransition` pone `.wf-leaving` antes de navegar. */
+html.wf-anim body {
+  animation: wf-enter-fade 0.4s ease;
+  transition: opacity 0.2s ease;
+}
+html.wf-anim.wf-leaving body {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.wf-anim body {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* --- Banners (hero-slider): cambio de slide más suave ---
    Pasa de expo-out (0.8s, "dispara y frena") a un ease-in-out simétrico y un
    pelín más largo: se siente como un deslizamiento parejo, no un tirón. */
