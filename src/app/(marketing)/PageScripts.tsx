@@ -13,6 +13,16 @@ import { useEffect } from "react";
  */
 export default function PageScripts({ js }: { js: string[] }) {
   useEffect(() => {
+    // Login de Webflow (modal Google Identity Services). El script
+    // initGoogleAuthGlobal reintenta hasta que GIS esté disponible.
+    if (!document.querySelector('script[src*="gsi/client"]')) {
+      const gsi = document.createElement("script");
+      gsi.src = "https://accounts.google.com/gsi/client";
+      gsi.async = true;
+      gsi.defer = true;
+      document.head.appendChild(gsi);
+    }
+
     const injected: HTMLScriptElement[] = [];
     for (const code of js) {
       const el = document.createElement("script");
@@ -22,22 +32,6 @@ export default function PageScripts({ js }: { js: string[] }) {
       injected.push(el);
     }
     document.dispatchEvent(new Event("DOMContentLoaded"));
-
-    // #4 — Login unificado: el navbar usa Auth.js (/portal), no el modal viejo
-    // (Google Identity Services + localStorage). Clonar el botón quita los
-    // listeners del script viejo; luego apunta a /portal. Se quitan los modales.
-    const goPortal = (e: Event) => {
-      e.preventDefault();
-      window.location.href = "/portal";
-    };
-    document.querySelectorAll<HTMLElement>(".auth-trigger").forEach((el) => {
-      const clone = el.cloneNode(true) as HTMLElement;
-      el.replaceWith(clone);
-      clone.addEventListener("click", goPortal);
-    });
-    ["globalAuthModal", "globalProfileModal"].forEach((id) =>
-      document.getElementById(id)?.remove()
-    );
 
     return () => injected.forEach((el) => el.remove());
   }, [js]);

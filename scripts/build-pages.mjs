@@ -98,12 +98,9 @@ function extract(html) {
   for (const m of html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
     const c = m[1];
     if (c.trim().length < 30) continue;
-    if (/gtag\(|dataLayer|google_tags_first_party/.test(c)) continue;
-    if (/document\.body\.style\.display\s*=\s*['"]none['"]/.test(c)) continue;
-    // Login viejo (Google Identity Services + localStorage): se descarta el
-    // script puro de auth. El login se unifica a Auth.js (botón → /portal).
-    // El script mixto (nav + auth) se conserva por el nav.
-    if (/initGoogleAuthGlobal/.test(c) && !/setupScrollAndMenu/.test(c)) continue;
+    if (/gtag\(|dataLayer|google_tags_first_party/.test(c)) continue; // analytics
+    // Se conservan los scripts de login de Webflow (modal Google Identity
+    // Services + localStorage) y el motor del portal /perfil, tal como estaban.
     js.push(c);
   }
 
