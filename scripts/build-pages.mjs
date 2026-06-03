@@ -71,6 +71,37 @@ function rewriteAssets(text) {
   );
 }
 
+function rewriteApi(text) {
+  // Repunta los fetch del catálogo/perfil del Apps Script → rutas Next (Supabase).
+  // Todas las rutas leen la SESIÓN de Supabase en el servidor (email verificado,
+  // RLS), no el email del cliente. Además se desactiva el login GIS viejo.
+  return (
+    text
+      // Catálogo (inventario) → /api/inventory (cacheado/ISR, sin pegarle al Sheet).
+      .replace(
+        /fetch\(\s*JSON_URL\s*\+\s*['"]\?action=getInventory['"]\s*\)/g,
+        "fetch('/api/inventory')"
+      )
+      // Sesión del cliente (userData/history/savedCart) → /api/session.
+      .replace(
+        /fetch\(`\$\{[A-Za-z_]+\}\?action=getUserSession&email=\$\{[^`]*\}`\)/g,
+        "fetch('/api/session')"
+      )
+      // Carrito en la nube (syncCart, POST no-cors) → /api/cart. (orden: antes que saveOrder)
+      .replace(
+        /fetch\(\s*JSON_URL\s*,\s*\{\s*method:\s*['"]POST['"],\s*mode:\s*['"]no-cors['"],/g,
+        "fetch('/api/cart', {\n        method: 'POST',"
+      )
+      // Guardar pedido (saveOrder, el POST restante) → /api/order.
+      .replace(
+        /fetch\(\s*JSON_URL\s*,\s*\{\s*method:\s*['"]POST['"],/g,
+        "fetch('/api/order', {\n        method: 'POST',"
+      )
+      // Desactiva el reintento infinito del login GIS viejo (queda inerte).
+      .replace(/setTimeout\(initGoogleAuthGlobal,\s*500\)/g, "void 0")
+  );
+}
+
 function extractMeta(html) {
   // Recupera el SEO del <head> de Webflow (title, description, Open Graph).
   const head = html.slice(0, html.indexOf("</head>"));
@@ -145,6 +176,7 @@ async function main() {
     css = rewriteAssets(css);
     body = rewriteAssets(body);
     js = js.map(rewriteAssets); // localiza imágenes de productos hardcodeadas
+    js = js.map(rewriteApi); // catálogo: getInventory → /api/inventory (Supabase)
     await writeFile(
       join(OUT_DIR, `${slugName}.json`),
       JSON.stringify({ slug: slugName, css, body, bodyClass, js, meta })
