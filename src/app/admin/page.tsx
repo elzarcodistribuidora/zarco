@@ -4,17 +4,21 @@ import { createClient } from "@/lib/supabase/server";
 export default async function AdminHome() {
   const supabase = await createClient();
 
-  const [productos, activos, clientes, pedidos] = await Promise.all([
-    supabase.from("productos").select("*", { count: "exact", head: true }),
-    supabase.from("productos").select("*", { count: "exact", head: true }).eq("web", true),
-    supabase.from("clientes").select("*", { count: "exact", head: true }),
-    supabase.from("pedidos").select("*", { count: "exact", head: true }),
-  ]);
+  const [productos, activos, clientes, pedidos, cotizaciones, cotizPend] =
+    await Promise.all([
+      supabase.from("productos").select("*", { count: "exact", head: true }),
+      supabase.from("productos").select("*", { count: "exact", head: true }).eq("web", true),
+      supabase.from("clientes").select("*", { count: "exact", head: true }),
+      supabase.from("pedidos").select("*", { count: "exact", head: true }),
+      supabase.from("cotizaciones").select("*", { count: "exact", head: true }),
+      supabase.from("cotizaciones").select("*", { count: "exact", head: true }).eq("atendido", false),
+    ]);
 
   const cards = [
     { label: "Productos", value: productos.count ?? 0, sub: `${activos.count ?? 0} activos para web`, href: "/admin/productos" },
     { label: "Clientes", value: clientes.count ?? 0, sub: "registrados", href: "/admin/clientes" },
     { label: "Pedidos", value: pedidos.count ?? 0, sub: "totales", href: "/admin/pedidos" },
+    { label: "Cotizaciones", value: cotizaciones.count ?? 0, sub: `${cotizPend.count ?? 0} sin atender`, href: "/admin/cotizaciones" },
   ];
 
   return (

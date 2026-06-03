@@ -60,6 +60,18 @@ export async function updateCliente(formData: FormData) {
   revalidatePath("/admin/clientes");
 }
 
+export async function toggleCotizacionAtendida(formData: FormData) {
+  const supabase = await requireAdmin();
+  const id = Number(formData.get("id"));
+  const atendido = formData.get("atendido") === "true";
+  const { error } = await supabase
+    .from("cotizaciones")
+    .update({ atendido })
+    .eq("id", id);
+  if (error) throw new Error(`Cotización: ${error.message}`);
+  revalidatePath("/admin/cotizaciones");
+}
+
 export async function updatePedidoStatus(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));

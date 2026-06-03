@@ -76,6 +76,36 @@ export type Database = {
         }
         Relationships: []
       }
+      cotizaciones: {
+        Row: {
+          atendido: boolean
+          created_at: string
+          email: string | null
+          folio: string
+          id: number
+          mensaje: string | null
+          negocio: string | null
+        }
+        Insert: {
+          atendido?: boolean
+          created_at?: string
+          email?: string | null
+          folio: string
+          id?: never
+          mensaje?: string | null
+          negocio?: string | null
+        }
+        Update: {
+          atendido?: boolean
+          created_at?: string
+          email?: string | null
+          folio?: string
+          id?: never
+          mensaje?: string | null
+          negocio?: string | null
+        }
+        Relationships: []
+      }
       pedido_items: {
         Row: {
           cantidad: number

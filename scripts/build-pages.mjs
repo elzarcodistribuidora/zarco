@@ -177,6 +177,11 @@ async function main() {
     body = rewriteAssets(body);
     js = js.map(rewriteAssets); // localiza imágenes de productos hardcodeadas
     js = js.map(rewriteApi); // catálogo: getInventory → /api/inventory (Supabase)
+    // El formulario de contacto captura LEADS de prospectos (sin login):
+    // su pedido va a /api/quote en vez de /api/order (que exige sesión).
+    if (slugName === "contacto") {
+      js = js.map((s) => s.replace(/'\/api\/order'/g, "'/api/quote'"));
+    }
     await writeFile(
       join(OUT_DIR, `${slugName}.json`),
       JSON.stringify({ slug: slugName, css, body, bodyClass, js, meta })
