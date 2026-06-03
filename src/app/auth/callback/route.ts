@@ -7,11 +7,14 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/perfil";
+  const isPopup = searchParams.get("popup") === "1";
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // En popup: vamos a una página que avisa al opener y se cierra sola.
+      if (isPopup) return NextResponse.redirect(`${origin}/auth/done`);
       return NextResponse.redirect(`${origin}${next.startsWith("/") ? next : "/perfil"}`);
     }
   }

@@ -13,16 +13,59 @@ export default function LoginPage() {
     const supabase = createClient();
     const next =
       new URLSearchParams(window.location.search).get("next") || "/perfil";
-    const { error } = await supabase.auth.signInWithOAuth({
+
+    // Pedimos la URL de OAuth pero NO redirigimos: la abrimos en un popup.
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}&popup=1`,
+        skipBrowserRedirect: true,
       },
     });
-    if (error) {
+    if (error || !data?.url) {
       setLoading(false);
       alert("No se pudo iniciar sesión. Intenta de nuevo.");
+      return;
     }
+
+    // Ventana emergente centrada.
+    const w = 480;
+    const h = 640;
+    const left = window.screenX + (window.outerWidth - w) / 2;
+    const top = window.screenY + (window.outerHeight - h) / 2;
+    const popup = window.open(
+      data.url,
+      "zarco-login",
+      `width=${w},height=${h},left=${left},top=${top}`
+    );
+
+    // Si el navegador bloquea el popup → redirect normal (respaldo).
+    if (!popup) {
+      window.location.href = data.url;
+      return;
+    }
+
+    // Cuando el popup termina, avisa por postMessage → vamos al perfil.
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || e.data !== "zarco-auth-done")
+        return;
+      window.removeEventListener("message", onMessage);
+      clearInterval(timer);
+      try {
+        popup.close();
+      } catch {}
+      window.location.href = next;
+    };
+    window.addEventListener("message", onMessage);
+
+    // Si cierran el popup sin terminar, reactiva el botón.
+    const timer = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(timer);
+        window.removeEventListener("message", onMessage);
+        setLoading(false);
+      }
+    }, 500);
   }
 
   return (
