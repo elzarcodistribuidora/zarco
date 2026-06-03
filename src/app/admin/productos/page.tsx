@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { updateProducto } from "../actions";
+import { RowForm } from "../ui/RowForm";
+import { SaveButton } from "../ui/SaveButton";
+import { IconSearch } from "../ui/icons";
 
 const LIMIT = 100;
 
@@ -23,7 +26,7 @@ export default async function ProductosAdmin({
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="admin-enter flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
             Productos
@@ -34,51 +37,59 @@ export default async function ProductosAdmin({
           </p>
         </div>
         <form className="flex gap-2">
-          <input
-            name="q"
-            defaultValue={q ?? ""}
-            placeholder="Buscar por nombre o código…"
-            className="w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-          <button className="rounded-lg bg-[#0A2240] px-4 py-2 text-sm font-semibold text-white">
+          <div className="relative">
+            <IconSearch
+              width={18}
+              height={18}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Buscar por nombre o código…"
+              className="w-64 rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
+            />
+          </div>
+          <button className="rounded-lg bg-[#0A2240] px-4 py-2 text-sm font-semibold text-white outline-none transition-all duration-150 hover:bg-[#0c2c54] focus-visible:ring-2 focus-visible:ring-[#0A2240]/40 active:scale-[0.97]">
             Buscar
           </button>
         </form>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="admin-enter mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/[0.03]" style={{ "--i": 1 } as React.CSSProperties}>
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-400">
+          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
             <tr>
               <th className="px-4 py-3">Código</th>
               <th className="px-4 py-3">Nombre</th>
               <th className="px-4 py-3">Categoría</th>
               <th className="px-4 py-3 w-32">Precio</th>
               <th className="px-4 py-3 w-16">Web</th>
-              <th className="px-4 py-3 w-20"></th>
+              <th className="px-4 py-3 w-24"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {rows.map((p) => (
-              <tr key={p.codigo}>
+              <tr key={p.codigo} className="transition-colors hover:bg-slate-50/70">
                 <td className="px-4 py-2 font-mono text-xs text-slate-500">
                   {p.codigo}
                 </td>
                 <td colSpan={5} className="p-0">
-                  <form
+                  <RowForm
                     action={updateProducto}
-                    className="grid grid-cols-[1fr_160px_120px_48px_80px] items-center gap-2 px-4 py-2"
+                    savedMessage={`Guardado: ${p.nombre_web}`}
+                    className="grid grid-cols-[1fr_160px_120px_48px_88px] items-center gap-2 px-4 py-2"
                   >
                     <input type="hidden" name="codigo" value={p.codigo} />
                     <input
                       name="nombre_web"
                       defaultValue={p.nombre_web}
-                      className="rounded-md border border-slate-200 px-2 py-1.5"
+                      className="rounded-md border border-slate-200 px-2 py-1.5 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
                     />
                     <input
                       name="categoria"
                       defaultValue={p.categoria ?? ""}
-                      className="rounded-md border border-slate-200 px-2 py-1.5"
+                      className="rounded-md border border-slate-200 px-2 py-1.5 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
                     />
                     <input
                       name="precio_final"
@@ -86,19 +97,17 @@ export default async function ProductosAdmin({
                       step="0.01"
                       min="0"
                       defaultValue={Number(p.precio_final)}
-                      className="rounded-md border border-slate-200 px-2 py-1.5 text-right"
+                      className="rounded-md border border-slate-200 px-2 py-1.5 text-right outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
                     />
                     <input
                       name="web"
                       type="checkbox"
                       defaultChecked={p.web}
-                      className="mx-auto h-5 w-5"
+                      className="mx-auto h-5 w-5 cursor-pointer accent-[#0A2240]"
                       title="Activado para web"
                     />
-                    <button className="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-[#0A2240] hover:text-white">
-                      Guardar
-                    </button>
-                  </form>
+                    <SaveButton className="px-3 py-1.5 text-xs" />
+                  </RowForm>
                 </td>
               </tr>
             ))}

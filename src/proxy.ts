@@ -1,6 +1,5 @@
 // Next.js 16 renombró "Middleware" → "Proxy" (misma funcionalidad).
-// Migrado a Supabase Auth: refresca la sesión y protege /portal y /admin.
-// (Auth.js / next-auth queda inerte; se retira en la limpieza final.)
+// Supabase Auth: refresca la sesión y protege /admin.
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 

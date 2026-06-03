@@ -1,16 +1,19 @@
 @AGENTS.md
 
-# El Zarco — Web (migración de Webflow → Next.js / Vercel)
+# El Zarco — Web (Webflow → Next.js / Vercel, con backend en Supabase)
 
 Distribuidora de abarrotes B2B. El sitio estaba 100% en Webflow (con mucho
-código custom embebido) y se migró a **Next.js (App Router, TypeScript)** para
-desplegar en **Vercel**. Es **un solo proyecto**: sitio público + portal de
-clientes.
+código custom embebido) y se migró a **Next.js (App Router, TypeScript)** sobre
+**Vercel**. Es **un solo proyecto**: sitio público + portal de clientes + panel
+admin.
 
-Decisiones tomadas con el dueño (junio 2026):
-- Framework: **Next.js** (mejor para el portal dinámico).
-- Un solo proyecto (público + portal juntos).
-- Prioridad: **"primero conectar todo como estaba (paridad), luego mejoras"**.
+Historia en dos fases:
+1. **Migración Webflow → Next** (jun 2026): reconstrucción fiel del sitio
+   público; el backend seguía siendo un **Google Apps Script** sobre Google
+   Sheets (paridad primero).
+2. **Migración del backend → Supabase** (dic 2026): se reemplazó el Apps Script
+   por **Supabase (Postgres + Auth)**, con **panel admin** para editar (ya no se
+   usa Google Sheets). El Apps Script quedó **retirado** (nada lo llama).
 
 ---
 
@@ -20,163 +23,205 @@ Decisiones tomadas con el dueño (junio 2026):
 src/
 ├── app/
 │   ├── layout.tsx                  Layout raíz neutro (sin CSS framework)
-│   ├── globals.css                 Tailwind (solo lo usa el portal)
+│   ├── globals.css                 Tailwind (portal + admin)
 │   ├── (marketing)/                SITIO PÚBLICO (reconstrucción fiel de Webflow)
-│   │   ├── layout.tsx              Carga Inter + webflow-shared.css + SmoothScroll
-│   │   ├── [[...slug]]/page.tsx    Renderiza cada página desde src/webflow/<slug>.json
-│   │   ├── PageScripts.tsx         Re-ejecuta los <script> inline de Webflow
-│   │   ├── SmoothScroll.tsx        Lenis (scroll suave) en todo el público
-│   │   └── marketing.css           CSS de Lenis
-│   ├── portal/                     PORTAL DE CLIENTES (Tailwind)
-│   │   ├── layout.tsx              Importa globals.css (Tailwind) + fuente
-│   │   ├── page.tsx                Dashboard: nivel, estatus, pedidos, catálogo
-│   │   └── login/page.tsx          "Entrar con Google"
-│   ├── api/auth/[...nextauth]/     Endpoint de Auth.js
-│   └── middleware.ts               Protege /portal (sin sesión → login)
-├── auth.ts                         Config Auth.js (Google)
-├── lib/matriz.ts                   Conector al backend (Apps Script)
-├── components/
-│   ├── Preloader.tsx               Preloader logo + barra (catálogo y portal)
-│   └── preloader.css
-└── webflow/                        Datos generados: <slug>.json (css+body+js)
+│   │   ├── layout.tsx              Inter + webflow-shared.css + SmoothScroll
+│   │   ├── [[...slug]]/page.tsx    Renderiza src/webflow/<slug>.json (incl. /perfil, /catalogo, /contacto)
+│   │   ├── PageScripts.tsx         Re-ejecuta los <script> de Webflow + PUENTE con Supabase Auth
+│   │   ├── SmoothScroll.tsx        Lenis (scroll suave)
+│   │   └── marketing.css
+│   ├── portal/
+│   │   ├── layout.tsx              Tailwind + Inter
+│   │   └── login/page.tsx          Login Google (popup); pantalla de respaldo
+│   ├── admin/                      PANEL ADMIN (solo rol admin)
+│   │   ├── layout.tsx              Guard de rol admin + nav
+│   │   ├── actions.ts              Server Actions (editar producto/cliente/pedido/cotización)
+│   │   ├── page.tsx                Dashboard (conteos)
+│   │   └── productos/ clientes/ pedidos/ cotizaciones/   CRUD por tabla
+│   ├── auth/
+│   │   ├── callback/route.ts       Intercambia el código OAuth → sesión (cookies)
+│   │   ├── signout/route.ts        Cierra sesión
+│   │   └── done/page.tsx           Cierra el popup de login y avisa al opener
+│   ├── api/
+│   │   ├── inventory/route.ts      Catálogo desde Supabase (cacheado, tag "inventory")
+│   │   ├── revalidate/route.ts     Webhook (token) → revalidateTag("inventory","max")
+│   │   ├── me/route.ts             Identidad de la sesión (para el JS de Webflow)
+│   │   ├── session/route.ts        userData + history + savedCart (RLS)
+│   │   ├── order/route.ts          Guarda pedido (EXIGE login) → pedidos + pedido_items
+│   │   ├── cart/route.ts           Carrito en la nube (savedCart)
+│   │   └── quote/route.ts          Lead del form de contacto (SIN login, service-role)
+│   ├── sitemap.ts robots.ts manifest.ts
+├── proxy.ts                        Next 16 "middleware": refresca sesión Supabase + protege /admin
+├── lib/
+│   ├── supabase/server.ts          Cliente con cookies (Server Components / route handlers)
+│   ├── supabase/client.ts          Cliente de navegador
+│   ├── supabase/admin.ts           Cliente service-role (BYPASS RLS, solo servidor)
+│   ├── supabase/middleware.ts      updateSession() para el proxy
+│   ├── supabase/types.ts           Tipos generados del esquema
+│   └── db.ts                       getInventory() (Supabase, unstable_cache tag "inventory")
+├── components/Preloader.tsx        Preloader logo + barra (solo /catalogo)
+└── webflow/<slug>.json             Datos generados (css + body + js + meta)
+scripts/
+├── mirror-webflow.mjs              npm run mirror   (baja el sitio de Webflow)
+├── optimize-images.mjs             npm run optimize (imágenes → WebP)
+├── build-pages.mjs                 npm run build:pages (genera src/webflow/*.json)
+└── import-to-supabase.mjs          Importó los productos una vez (dev tool)
 ```
+
+`.mcp.json` conecta el **MCP de Supabase** (proyecto `gekuyrjsehwsyorqyuxc`) para
+correr migraciones/SQL desde el editor.
 
 ---
 
-## Sitio público — cómo funciona la reconstrucción fiel
+## Sitio público — reconstrucción fiel de Webflow
 
-Webflow **no exporta ZIP** con el plan actual (solo acceso Editor), y el sitio
-sigue publicado en `https://el-zarco.webflow.io`. En vez de rehacer el diseño,
-se **reusa el HTML/CSS/JS de Webflow** y se sirve dentro de Next:
+Webflow **no exporta ZIP** (solo acceso Editor) y el sitio sigue publicado en
+`https://el-zarco.webflow.io`. En vez de rehacer el diseño, se **reusa el
+HTML/CSS/JS de Webflow** dentro de Next:
 
-1. `scripts/mirror-webflow.mjs` (`npm run mirror`) descarga las 14 páginas y
-   todos los assets (imágenes en atributos, `srcset`, `url()` de CSS inline y
-   URLs hardcodeadas dentro de `<script>` — p.ej. fotos de productos de los
-   carruseles). HTML → `webflow-export/`, assets → `public/assets/`.
-2. `scripts/optimize-images.mjs` (`npm run optimize`) convierte todas las
-   imágenes a **WebP** (con `sharp`, tope de ancho 2000px; el GIF → WebP
-   animado) y **borra los originales**. Resultado: ~65MB → ~5.8MB (-92%).
-3. `scripts/build-pages.mjs` (`npm run build:pages`):
-   - Renombra los assets a nombres seguros (sin espacios/acentos/paréntesis).
-   - Extrae de cada página: el **CSS inline**, el **body** y los **scripts**.
-   - Reescribe todas las URLs del CDN de Webflow → `/assets/...` (self-hosted)
-     y apunta a la versión **.webp** cuando existe.
-   - Descarta: analytics (gtag), el motor viejo de `/perfil` (ocultaba el body
-     y redirigía) y el **script puro de login viejo** (Google Identity Services
-     + localStorage) — el login se unificó a Auth.js.
-   - **Limpia el body**: quita los `<style>` (ya van en `css`, evita CSS
-     duplicado) y la basura embebida por Webflow (un `<head>` con title/meta
-     dentro del body + fragmentos `</body></html>`). Esto bajó el peso de los
-     bodies ~49%.
+1. `mirror-webflow.mjs` (`npm run mirror`) baja las 14 páginas + assets
+   (imágenes en atributos, `srcset`, `url()` de CSS y URLs hardcodeadas en
+   `<script>`). HTML → `webflow-export/`, assets → `public/assets/`.
+2. `optimize-images.mjs` (`npm run optimize`) → todo a **WebP** (sharp, tope
+   2000px; GIF → WebP animado) y borra originales (~65MB → ~5.8MB, -92%).
+3. `build-pages.mjs` (`npm run build:pages`):
+   - Renombra assets a nombres seguros y reescribe URLs del CDN de Webflow →
+     `/assets/...` (.webp cuando existe).
+   - Extrae de cada página el **CSS inline**, el **body** y los **scripts**.
+   - **`rewriteApi`** — repunta el JS de Webflow del backend viejo a las rutas
+     Next (Supabase): `getInventory`→`/api/inventory`, `getUserSession`→
+     `/api/session`, `saveOrder`→`/api/order`, `syncCart`→`/api/cart`; y
+     **desactiva el login GIS viejo** (`setTimeout(initGoogleAuthGlobal,500)`→
+     `void 0`). En **`contacto`** el pedido va a `/api/quote` (lead sin login).
+   - Limpia el body (quita `<style>` duplicados + basura embebida de Webflow).
    - Escribe `src/webflow/<slug>.json` = `{ slug, css, body, bodyClass, js, meta }`.
-4. `[[...slug]]/page.tsx` lee ese JSON y lo renderiza (SSG, estático):
-   - `<style>` con el CSS inline + `<div dangerouslySetInnerHTML>` con el body.
-   - `PageScripts` reinyecta los `js` como `<script>` reales y dispara un
-     `DOMContentLoaded` sintético (porque el HTML inyectado no ejecuta scripts,
-     y los scripts originales envuelven su lógica en ese evento).
+4. `[[...slug]]/page.tsx` lo renderiza (SSG): `<style>` + `dangerouslySetInnerHTML`
+   del body + `<PageScripts>`.
 
-Detalles importantes:
-- Las páginas usan **Inter** (Google Fonts) y `webflow-shared.css`. NO usan
-  Tailwind (para que no choquen con el CSS de Webflow).
-- Los links internos son `<a href>` normales → **recarga completa** entre
-  páginas (no SPA). Por eso re-ejecutar scripts no causa redeclaraciones.
-- Las flechas de los carruseles usan `onclick="scrollCarousel(...)"` global.
-- **Login unificado:** el navbar ya no usa el login viejo (GIS + localStorage).
-  `PageScripts.tsx` reemplaza los `.auth-trigger` para que manden a `/portal`
-  (Auth.js) y quita los modales viejos (`#globalAuthModal`, `#globalProfileModal`).
-- Algunas tarjetas (cremería, etc.) **no tienen imagen en el original** — eso
-  es fiel, no es un bug.
+Detalles:
+- Páginas usan **Inter** + `webflow-shared.css` (NO Tailwind, para no chocar).
+- Links internos = `<a href>` normales → **recarga completa** entre páginas.
+- Carruseles: `onclick="scrollCarousel(...)"` global.
 
 ### Para re-bajar el sitio si cambia en Webflow
 ```bash
 npm run mirror && npm run optimize && npm run build:pages
 ```
-(El orden importa: `optimize` debe correr antes de `build:pages` para que las
-referencias apunten a `.webp`.)
+(El orden importa: `optimize` antes de `build:pages` para apuntar a `.webp`.)
 
 ---
 
-## Portal de clientes y backend
+## Backend: Supabase (Postgres + Auth)
 
-**Hallazgo clave:** la "base de datos dinámica" del portal viejo ya es un
-**Google Apps Script Web App** (sigue vivo) parado enfrente de Google Sheets
-(`CRM CLIENTES` + `PEDIDOS WEB`). NO se migró (paridad primero). Endpoints:
-- `?action=getInventory` → catálogo con `PRECIO FINAL`, código, categoría…
-- `?action=getUserSession&email=` → `{ userData, history, savedCart }`
-- `POST` JSON → guardar pedidos / carrito
+El portal viejo de Webflow corría client-side contra un **Google Apps Script**
+sobre Sheets, con login **Google Identity Services + localStorage** (inseguro:
+cualquiera leía pedidos de cualquier email). Se migró a Supabase.
 
-`src/lib/matriz.ts` lo consume **desde el servidor** de Next (el email viene de
-la sesión verificada, nunca del cliente). Esto **arregla un hueco de seguridad**
-del portal viejo, que confiaba en `localStorage` (cualquiera podía leer pedidos
-de cualquier email).
+### Tablas (esquema `public`, todas con RLS)
+- `productos` — `codigo` (PK), `nombre_web`, `marca`, `categoria`,
+  `unidad_medida`, `precio_final`, `web` (activo para web).
+- `clientes` — `id`, `auth_user_id` (→ `auth.users`), `email`, `nombre`,
+  `estatus`, `nivel`, `role` (`cliente`|`admin`).
+- `pedidos` — `folio`, `cliente_id`, `email`, `fecha`, `total`, `status`,
+  `resumen`. `pedido_items` — líneas (`codigo`, `nombre`, `precio`, `cantidad`).
+- `carritos` — `cliente_id` (PK), `items` jsonb (savedCart en la nube).
+- `cotizaciones` — leads del form de contacto (`folio`, `negocio`, `email`,
+  `mensaje`, `atendido`).
 
-**Auth + seguridad:** Auth.js v5 (`next-auth@beta`) con Google. Reutiliza el
-OAuth client existente (`655792493975-…apps.googleusercontent.com`).
-`middleware.ts` bloquea `/portal` sin sesión.
-- **Registro abierto:** cualquiera entra con su Google y queda como "Cliente
-  Nuevo" en la Matriz (el objetivo es vender). El middleware solo exige sesión
-  iniciada para `/portal`; no hay lista blanca de clientes. (Si en el futuro se
-  quisiera restringir, se reañade un callback `signIn` que valide el email
-  contra `CRM CLIENTES`.)
-- **Token del Apps Script:** `lib/matriz.ts` manda `?token=APPS_SCRIPT_TOKEN`.
-  El Apps Script debe validar ese token para `getUserSession` y los POST
-  (datos sensibles por cliente). `getInventory` (catálogo/precios) queda
-  abierto porque el catálogo lo carga el navegador. **Snippet a pegar en el
-  Apps Script** (Editor → arriba de `doGet`/`doPost`):
-  ```js
-  const TOKEN = "EL-MISMO-VALOR-DE-APPS_SCRIPT_TOKEN";
-  function requiereToken(e, action) {
-    const protegido = action === "getUserSession" || !action; // POST = sin action
-    if (protegido && e.parameter.token !== TOKEN) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ error: "No autorizado" })
-      ).setMimeType(ContentService.MimeType.JSON);
-    }
-    return null;
-  }
-  // En doGet(e):  const bloqueo = requiereToken(e, e.parameter.action); if (bloqueo) return bloqueo;
-  // En doPost(e): const bloqueo = requiereToken(e, null);              if (bloqueo) return bloqueo;
-  ```
-  Mientras `APPS_SCRIPT_TOKEN` esté vacío, no se manda token y todo funciona
-  como antes (actívalo cuando pegues el snippet).
+### Seguridad (RLS)
+- Helpers en esquema **`private`** (NO expuesto por la API):
+  `private.is_admin()`, `private.current_cliente_id()`, `private.es_email_admin()`.
+- `productos`: lectura pública; escritura solo admin.
+- `clientes`/`pedidos`/`pedido_items`/`carritos`: cada quien ve lo suyo; admin
+  ve todo.
+- `cotizaciones`: solo admin lee; las inserta el server con **service-role**.
+- **Trigger `handle_new_user`**: al entrar con Google crea/enlaza el cliente
+  (REGISTRO ABIERTO → "Cliente Nuevo"); si el email está en
+  `private.es_email_admin()` queda `role=admin`.
+- **Admins (por email):** `andrevalleo13@gmail.com` (dev) y
+  `elzarcomayoreo@gmail.com` (negocio). Editar la lista en `private.es_email_admin()`.
+
+### Auth (Supabase, Google)
+- `@supabase/ssr` con sesión en cookies. `lib/supabase/{server,client,admin}.ts`.
+- **Login = popup de Google** (`signInWithOAuth` con `skipBrowserRedirect` +
+  `window.open`). El callback (`/auth/callback`) intercambia el código; en modo
+  popup manda a `/auth/done`, que avisa al opener y cierra la ventana.
+- `proxy.ts` (Next 16 renombró *middleware* → **proxy**) refresca la sesión y
+  **solo protege `/admin`**. `/perfil` y `/catalogo` son públicos (el invitado
+  ve su prompt de login).
+- **Requisito de config (Supabase Dashboard → Auth → URL Configuration):**
+  Site URL = dominio prod; Redirect URLs = `https://DOMINIO/**` y
+  `http://localhost:3000/**`. En Google Cloud: JS origins (localhost + supabase
+  + dominio) y redirect URI `https://gekuyrjsehwsyorqyuxc.supabase.co/auth/v1/callback`.
+
+### El "puente" (catálogo/perfil/contacto siguen siendo páginas Webflow)
+No se reconstruyeron en React: su JS se repunta (build-pages) a las rutas Next
+y `PageScripts.tsx` hace de puente:
+- Antes de correr los scripts, consulta `/api/me` y siembra
+  `localStorage.zarcoUser` (lo que el JS de Webflow espera) si hay sesión.
+- El navbar (`.auth-trigger`, p.ej. `#desktopUserBtn`): **sin sesión** abre el
+  popup de Google directo; **con sesión** abre un menú flotante (Ir a perfil /
+  Cerrar sesión). El login GIS viejo quedó inerte.
+- En `/perfil`, si el usuario es admin, inyecta un botón flotante **"⚙ Panel
+  admin"** (abajo a la izquierda) → `/admin`.
+- Las rutas `/api/*` leen el email de la **sesión verificada** (RLS), nunca del
+  cliente → cierra el hueco de seguridad viejo. `/api/order` exige login;
+  `/api/quote` (leads de prospectos) no.
+
+### Catálogo cacheado + revalidación on-demand (ISR)
+- `lib/db.ts` `getInventory()` lee `productos` (web=true) con `unstable_cache`
+  (tag `inventory`, revalida 5 min) en la forma que espera el JS del catálogo.
+- `/api/revalidate` (POST con `?token=APPS_SCRIPT_TOKEN`) llama
+  `revalidateTag("inventory","max")` → el catálogo refleja cambios al instante.
+  El panel admin lo dispara solo al editar un producto.
+
+> Nota Next 16: `revalidateTag` requiere 2 args; `cookies()` es async; `use
+> cache`/`cacheComponents` NO está activado (se usa `unstable_cache`).
+
+---
+
+## Panel admin (`/admin`)
+
+Reemplaza la edición en Google Sheets. Doble barrera: el `layout.tsx` exige
+`role=admin` y las RLS lo exigen otra vez. Los writes usan **la sesión del
+admin** (no service-role). Vistas: dashboard (conteos), productos (precio/web/
+nombre/categoría, con búsqueda), clientes (estatus/nivel/role), pedidos
+(status), cotizaciones (leads, marcar atendido). Al editar un producto se
+revalida el catálogo público.
+
+---
 
 ## SEO
 
-- `build-pages.mjs` extrae del `<head>` de Webflow el `title`, `description` y
-  `og:image` de cada página → campo `meta` en el JSON.
-- `[[...slug]]/page.tsx` los aplica con `generateMetadata` (title, description,
-  Open Graph, Twitter card, canonical). `metadataBase` sale de
-  `NEXT_PUBLIC_SITE_URL`.
-- `app/sitemap.ts` y `app/robots.ts` generan `sitemap.xml` (las 13 páginas
-  públicas, sin `/perfil`) y `robots.txt` (bloquea `/portal` y `/api`).
+- `build-pages.mjs` extrae `title`/`description`/`og:image` del `<head>` →
+  `meta`; `[[...slug]]/page.tsx` los aplica con `generateMetadata`.
+  `metadataBase` ← `NEXT_PUBLIC_SITE_URL`.
+- `app/sitemap.ts` (páginas públicas, excluye `/perfil`) y `app/robots.ts`
+  (disallow `/portal`, `/api`). `/admin` y `/portal` además llevan `noindex` por
+  metadata en sus layouts.
+
+## Preloader + scroll suave
+
+- Lenis (scroll suave) en todo el público (`SmoothScroll.tsx`).
+- Preloader (logo + barra `#0A2240`/`#A81200`) **solo en `/catalogo`**
+  (`waitForSelector="#productBody"`, espera a que cargue la tabla). Respeta
+  `prefers-reduced-motion`.
 
 ---
 
-## Preloader + scroll suave (UX)
+## Variables de entorno (`.env.local`; también en Vercel)
 
-- **Scroll suave (Lenis):** en TODO el sitio público (`SmoothScroll.tsx`).
-- **Preloader** (`src/components/Preloader.tsx`): logo del Zarco + barra de
-  progreso 0→100% sobre fondo azul marino de marca (`#0A2240`, barra roja
-  `#A81200`). Aparece **solo en las páginas que cargan datos**:
-  - **/catalogo** → `<Preloader waitForSelector="#productBody" />`: la barra
-    espera a que la tabla de productos tenga filas antes de revelar, para que el
-    cliente vea el catálogo ya cargado y no espere a que aparezca.
-  - **/portal** → `<Preloader />`: los datos vienen del servidor (SSR), así que
-    solo cubre la entrada y revela todo listo.
-  - Las páginas estáticas (home, nosotros, categorías…) **no llevan preloader**.
-- Todo respeta `prefers-reduced-motion`.
+- `NEXT_PUBLIC_SUPABASE_URL` — **sin** `/rest/v1/` ni diagonal final
+  (`https://gekuyrjsehwsyorqyuxc.supabase.co`). Un sufijo mal puesto da el error
+  "No API key found".
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon/publishable key (se incrusta en el
+  build → al cambiarla hay que **redeploy**).
+- `SUPABASE_SERVICE_ROLE_KEY` — service-role (solo servidor; `/api/quote`, imports).
+- `APPS_SCRIPT_TOKEN` — ahora es el **secreto del webhook** `/api/revalidate`.
+- `NEXT_PUBLIC_SITE_URL` — URL pública (SEO/OG/sitemap).
 
----
-
-## Variables de entorno (`.env.local`, ver `.env.example`)
-
-- `AUTH_SECRET` — ya generado.
-- `AUTH_GOOGLE_ID` — el OAuth client existente (ya puesto).
-- `AUTH_GOOGLE_SECRET` — **PENDIENTE** (sacarlo de Google Cloud, mismo client).
-- `APPS_SCRIPT_URL` — backend Apps Script (ya puesto, vivo).
-- `APPS_SCRIPT_TOKEN` — token compartido para blindar el Apps Script (opcional
-  hasta que pegues el snippet en el script).
-- `NEXT_PUBLIC_SITE_URL` — URL pública del sitio (SEO/sitemap/OG).
+(Se retiraron las envs legacy `AUTH_*` y `APPS_SCRIPT_URL` junto con Auth.js y
+`lib/matriz.ts`. **Quítalas también en Vercel** si siguen ahí.)
 
 ---
 
@@ -187,36 +232,27 @@ npm run dev          # desarrollo
 npm run build        # build de producción
 npm run start        # servir el build
 npm run mirror       # re-descargar el sitio de Webflow
-npm run optimize     # convertir imágenes a WebP (corre ANTES de build:pages)
-npm run build:pages  # regenerar src/webflow/*.json
+npm run optimize     # imágenes → WebP (ANTES de build:pages)
+npm run build:pages  # regenerar src/webflow/*.json (aplica rewriteApi)
 ```
 
 ---
 
 ## Pendientes / siguientes pasos
 
-1. `AUTH_GOOGLE_SECRET` para dejar el login del portal 100% funcional.
-2. Pegar el snippet del token en el Apps Script + poner `APPS_SCRIPT_TOKEN`
-   para activar el blindaje del endpoint sensible.
-3. **Deploy a Vercel** (instalar `vercel` CLI) + conectar el dominio propio
-   (y poner `NEXT_PUBLIC_SITE_URL` con el dominio real).
-4. Mejora futura: migrar el Google Sheet a una DB real (Supabase/Postgres) sin
-   tocar el front (el portal ya está desacoplado vía `lib/matriz.ts`).
+1. **Apps Script:** ya nada lo llama; dejarlo sin publicar ~2 semanas como red
+   de seguridad y luego borrarlo. El Google Sheet ya no es necesario.
+2. Confirmar en producción el flujo logueado completo (login popup → /perfil →
+   pedido → admin lo ve) y las Redirect URLs de Supabase. Quitar las envs
+   `AUTH_*` / `APPS_SCRIPT_URL` también en Vercel.
 
-## Estado de las mejoras post-migración
+## Mejoras ya hechas
 
-- ✅ Imágenes optimizadas (WebP, -92%).
-- ✅ Seguridad del portal (registro abierto por Google + token del Apps Script).
-- ✅ SEO por página (title/description/OG + sitemap + robots).
-- ✅ Login unificado a Auth.js (se quitó el login viejo del navbar).
-- ✅ Body limpiado (-49%): se quitó CSS duplicado y basura embebida de Webflow.
-- ⏳ Alt text de imágenes / nombres descriptivos: el alt importa más que el
-  nombre de archivo; los `<img>` conservan el alt de Webflow. Renombrar los
-  105 assets daría un beneficio marginal y riesgo de colisiones, así que no se
-  hizo (los nombres ya incluyen hash único + descriptor).
-- ⏳ Nav/footer en componentes React compartidos: el `<nav>` y el `<footer>`
-  son byte-idénticos entre páginas, PERO el export de Webflow los intercala con
-  basura por página (drawer móvil, floats de WhatsApp, meta embebido), así que
-  una extracción automática es riesgosa. Recomendado hacerlo como **rebuild
-  manual** de un `<SiteHeader>`/`<SiteFooter>` en React (path B), cuando se
-  quiera invertir en ello — no bloquea nada.
+- ✅ Imágenes WebP (-92%).
+- ✅ Backend en **Supabase** (Postgres + Auth + RLS), Apps Script retirado.
+- ✅ **Panel admin** (CRUD productos/clientes/pedidos/cotizaciones) — reemplaza el Sheet.
+- ✅ Seguridad real por fila (RLS): cada cliente solo ve lo suyo.
+- ✅ Login con Google (popup) + menú de perfil flotante (sin pantalla azul).
+- ✅ Captura de **leads** de prospectos (form de contacto → `/api/quote`).
+- ✅ Catálogo cacheado (ISR) + revalidación on-demand al editar precios.
+- ✅ SEO por página + sitemap + robots.

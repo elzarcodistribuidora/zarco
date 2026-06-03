@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { toggleCotizacionAtendida } from "../actions";
+import { RowForm } from "../ui/RowForm";
+import { SaveButton } from "../ui/SaveButton";
 
 export default async function CotizacionesAdmin() {
   const supabase = await createClient();
@@ -14,22 +16,25 @@ export default async function CotizacionesAdmin() {
 
   return (
     <>
-      <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
-        Cotizaciones / Leads
-      </h1>
-      <p className="mt-1 text-sm text-slate-500">
-        {rows.length} en total · {pendientes} sin atender · vienen del formulario
-        de contacto (prospectos sin cuenta).
-      </p>
+      <div className="admin-enter">
+        <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
+          Cotizaciones / Leads
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          {rows.length} en total · {pendientes} sin atender · vienen del
+          formulario de contacto (prospectos sin cuenta).
+        </p>
+      </div>
 
       <div className="mt-6 space-y-3">
-        {rows.map((c) => (
+        {rows.map((c, i) => (
           <div
             key={c.id}
-            className={`rounded-2xl border p-4 ${
+            style={{ "--i": Math.min(i + 1, 12) } as React.CSSProperties}
+            className={`admin-enter rounded-2xl border p-4 transition-all duration-200 ${
               c.atendido
-                ? "border-slate-200 bg-white opacity-70"
-                : "border-[#A81200]/30 bg-[#A81200]/5"
+                ? "border-slate-200 bg-white opacity-70 hover:opacity-100"
+                : "border-[#A81200]/30 bg-[#A81200]/[0.04] shadow-sm shadow-[#A81200]/5"
             }`}
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -39,7 +44,8 @@ export default async function CotizacionesAdmin() {
                     {c.folio}
                   </span>
                   {!c.atendido && (
-                    <span className="rounded-full bg-[#A81200] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#A81200] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/90" />
                       Nuevo
                     </span>
                   )}
@@ -50,7 +56,7 @@ export default async function CotizacionesAdmin() {
                 {c.email && (
                   <a
                     href={`mailto:${c.email}`}
-                    className="text-sm text-[#0A2240] underline"
+                    className="text-sm text-[#0A2240] underline-offset-2 transition hover:text-[#A81200] hover:underline"
                   >
                     {c.email}
                   </a>
@@ -70,17 +76,25 @@ export default async function CotizacionesAdmin() {
                     minute: "2-digit",
                   })}
                 </span>
-                <form action={toggleCotizacionAtendida}>
+                <RowForm
+                  action={toggleCotizacionAtendida}
+                  savedMessage={
+                    c.atendido
+                      ? `${c.folio} marcado pendiente`
+                      : `${c.folio} marcado atendido`
+                  }
+                  flash={false}
+                >
                   <input type="hidden" name="id" value={c.id} />
                   <input
                     type="hidden"
                     name="atendido"
                     value={(!c.atendido).toString()}
                   />
-                  <button className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-[#0A2240] hover:text-white">
+                  <SaveButton variant="ghost" className="px-3 py-1.5 text-xs">
                     {c.atendido ? "Marcar pendiente" : "Marcar atendido"}
-                  </button>
-                </form>
+                  </SaveButton>
+                </RowForm>
               </div>
             </div>
           </div>

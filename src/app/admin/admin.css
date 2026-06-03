@@ -1,0 +1,100 @@
+/* Animaciones y microinteracciones del panel admin.
+   Scoped al admin: solo se importa en src/app/admin/layout.tsx. */
+
+@keyframes admin-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-flash {
+  0% {
+    background-color: rgba(16, 185, 129, 0); /* emerald-500/0 */
+  }
+  25% {
+    background-color: rgba(16, 185, 129, 0.14);
+  }
+  100% {
+    background-color: rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes admin-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes admin-toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes admin-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Entrada escalonada de tarjetas / filas. El delay lo pone cada elemento
+   con --i (índice) en su style inline. */
+.admin-enter {
+  animation: admin-fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* Flash verde sutil al guardar una fila/tarjeta. */
+.admin-flash {
+  animation: admin-flash 1.1s ease-out;
+}
+
+.admin-toast-in {
+  animation: admin-toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.admin-toast-out {
+  animation: admin-toast-out 0.22s ease-in forwards;
+}
+
+.admin-spin {
+  animation: admin-spin 0.6s linear infinite;
+}
+
+.admin-drawer-in {
+  animation: admin-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Respeta la preferencia de menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  .admin-enter,
+  .admin-flash,
+  .admin-toast-in,
+  .admin-toast-out,
+  .admin-spin,
+  .admin-drawer-in {
+    animation: none !important;
+  }
+}
