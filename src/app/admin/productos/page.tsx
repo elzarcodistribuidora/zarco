@@ -3,27 +3,41 @@ import { updateProducto } from "../actions";
 import { RowForm } from "../ui/RowForm";
 import { SaveButton } from "../ui/SaveButton";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
+import { LoadMore } from "../ui/LoadMore";
 import { IconSearch } from "../ui/icons";
 
-const LIMIT = 100;
+const PAGE = 100; // cuántos productos por "tanda" (botón Cargar más)
+
+// Categorías disponibles en el desplegable (valor exacto guardado : etiqueta).
+const CATEGORIAS = [
+  { value: "Lacteos", label: "Lácteos" },
+  { value: "Abarrotes", label: "Abarrotes" },
+  { value: "Embutidos", label: "Embutidos" },
+  { value: "Vinos Y Licores", label: "Vinos y Licores" },
+  { value: "Sys", label: "Sys" },
+];
 
 export default async function ProductosAdmin({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; n?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, n } = await searchParams;
+  // `n` = cuántas filas mostrar (crece con "Cargar más"). Mín. una tanda.
+  const limit = Math.max(PAGE, Math.min(Number(n) || PAGE, 5000));
   const supabase = await createClient();
 
   let query = supabase
     .from("productos")
     .select("codigo, nombre_web, categoria, precio_final, web", { count: "exact" })
     .order("nombre_web", { ascending: true })
-    .limit(LIMIT);
+    .limit(limit);
   if (q) query = query.or(`nombre_web.ilike.%${q}%,codigo.ilike.%${q}%`);
 
   const { data: productos, count } = await query;
   const rows = productos ?? [];
+  const total = count ?? 0;
+  const restantes = total - rows.length;
 
   return (
     <>
@@ -87,11 +101,24 @@ export default async function ProductosAdmin({
                       defaultValue={p.nombre_web}
                       className="rounded-md border border-slate-200 px-2 py-1.5 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
                     />
-                    <input
+                    <select
                       name="categoria"
                       defaultValue={p.categoria ?? ""}
-                      className="rounded-md border border-slate-200 px-2 py-1.5 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
-                    />
+                      className="cursor-pointer rounded-md border border-slate-200 bg-white px-2 py-1.5 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
+                    >
+                      <option value="">— Sin categoría —</option>
+                      {CATEGORIAS.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                      {/* Si el producto trae una categoría fuera de la lista,
+                          la conservamos como opción para no perderla al guardar. */}
+                      {p.categoria &&
+                        !CATEGORIAS.some((c) => c.value === p.categoria) && (
+                          <option value={p.categoria}>{p.categoria}</option>
+                        )}
+                    </select>
                     <input
                       name="precio_final"
                       type="number"
@@ -116,6 +143,9 @@ export default async function ProductosAdmin({
           <p className="px-4 py-8 text-center text-sm text-slate-400">
             Sin resultados.
           </p>
+        )}
+        {restantes > 0 && (
+          <LoadMore q={q} next={rows.length + PAGE} restantes={restantes} />
         )}
       </div>
     </>
