@@ -6,6 +6,16 @@ export default function MarketingLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
+      {/* Activa las animaciones (clase `wf-anim` en <html>) ANTES del primer
+          paint, salvo que el usuario pida menos movimiento. Hacerlo aquí (y no
+          en un efecto) evita el parpadeo de "aparece → se esconde → entra". */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)" +
+            "document.documentElement.classList.add('wf-anim')}catch(e){}",
+        }}
+      />
       {/* Fuente Inter (la del sitio original) + CSS compartido de Webflow */}
       <link
         rel="stylesheet"

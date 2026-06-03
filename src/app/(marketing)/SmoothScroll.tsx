@@ -13,9 +13,13 @@ export default function SmoothScroll() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const lenis = new Lenis({
-      lerp: 0.1, // 0 = más pesado, 1 = instantáneo
+      // lerp más alto = el scroll "alcanza" más rápido al puntero = se siente
+      // ágil pero sigue suave (0.1 se sentía flotante/lento). 0 = pesado,
+      // 1 = instantáneo.
+      lerp: 0.14,
       smoothWheel: true,
-      wheelMultiplier: 1,
+      wheelMultiplier: 1.05, // cada giro de rueda avanza un pelín más
+      touchMultiplier: 1.6, // gesto táctil con más recorrido
     });
 
     let raf = 0;
