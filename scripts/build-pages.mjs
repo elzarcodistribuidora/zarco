@@ -102,6 +102,43 @@ function rewriteApi(text) {
   );
 }
 
+// Puente para el catálogo: expone en `window` lo que el JS de Webflow declara
+// como globales léxicos (cart, allProducts, handleProductSelection) y emite
+// eventos al cambiar el carrito / la tabla, para que el componente React de
+// recomendaciones (CatalogRecs) lea el estado y agregue productos sin tocar
+// el JS generado. Se añade como ÚLTIMO script → corre después de declararse
+// esos globales (comparten el entorno léxico global de los <script> clásicos).
+const CATALOG_BRIDGE = `
+(function(){
+  if (window.__zarcoBridge) return; window.__zarcoBridge = 1;
+  function fire(name){ try { document.dispatchEvent(new CustomEvent(name)); } catch(e){} }
+  function wrap(fnName, evt){
+    try {
+      if (typeof window[fnName] === 'function') {
+        var orig = window[fnName];
+        window[fnName] = function(){ var r = orig.apply(this, arguments); fire(evt); return r; };
+        return;
+      }
+    } catch(e){}
+    try {
+      // function declaration sin estar en window (modo estricto): reasignar el binding global.
+      eval('typeof ' + fnName + " === 'function' && (" + fnName + ' = (function(o){ return function(){ var r = o.apply(this, arguments); document.dispatchEvent(new CustomEvent("' + evt + '")); return r; }; })(' + fnName + '))');
+    } catch(e){}
+  }
+  wrap('updateCartUI', 'zarco:cart-updated');
+  wrap('renderTable', 'zarco:table-rendered');
+  window.zarcoCatalog = {
+    getCart: function(){ try { return cart; } catch(e){ return null; } },
+    getProducts: function(){ try { return allProducts; } catch(e){ return null; } },
+    add: function(id, name, price, qty){
+      try { handleProductSelection(id, name, price, true, null, null, true, qty || 1); return true; }
+      catch(e){ return false; }
+    }
+  };
+  fire('zarco:bridge-ready');
+})();
+`;
+
 function extractMeta(html) {
   // Recupera el SEO del <head> de Webflow (title, description, Open Graph).
   const head = html.slice(0, html.indexOf("</head>"));
@@ -181,6 +218,12 @@ async function main() {
     // su pedido va a /api/quote en vez de /api/order (que exige sesión).
     if (slugName === "contacto") {
       js = js.map((s) => s.replace(/'\/api\/order'/g, "'/api/quote'"));
+    }
+    // Catálogo: añade el puente (window.zarcoCatalog + eventos) para las
+    // recomendaciones cross-sell / upsell. Va al final para correr después
+    // de que el JS de Webflow declare cart/allProducts/handleProductSelection.
+    if (slugName === "catalogo") {
+      js = [...js, CATALOG_BRIDGE];
     }
     await writeFile(
       join(OUT_DIR, `${slugName}.json`),

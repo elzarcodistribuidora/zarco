@@ -98,10 +98,17 @@ export function Sidebar({
   );
 
   const brand = (
-    <Link href="/admin" className="flex items-center gap-2 px-2">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#0A2240] text-base font-black text-white">
-        Z
-      </span>
+    <Link
+      href="/"
+      title="Volver al inicio del sitio"
+      className="group flex items-center gap-2 px-2"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/assets/admin-logo.webp"
+        alt="El Zarco — ir al inicio"
+        className="h-9 w-9 object-contain transition-transform duration-150 group-hover:scale-110 group-active:scale-95"
+      />
       <span className="text-lg font-black leading-none tracking-tight text-[#0A2240]">
         El Zarco
         <span className="ml-1 text-[#A81200]">Admin</span>

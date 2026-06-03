@@ -27,28 +27,64 @@ export type InventoryRow = {
   "UNIDAD DE MEDIDA": string | null;
   "PRECIO FINAL": number;
   WEB: string;
+  // Recomendaciones precalculadas (tabla recomendaciones), en orden de rank.
+  // El JS del catálogo pasa las llaves a MAYÚSCULAS → las lee como
+  // RECS_COMP (cross-sell / complementos) y RECS_SIM (upsell / similares).
+  recs_comp: string[];
+  recs_sim: string[];
 };
+
+// Mapa codigo → { complemento:[...], similar:[...] } ordenado por rank.
+async function fetchRecsMap(
+  db: ReturnType<typeof publicClient>
+): Promise<Map<string, { comp: string[]; sim: string[] }>> {
+  const map = new Map<string, { comp: string[]; sim: string[] }>();
+  const { data, error } = await db
+    .from("recomendaciones")
+    .select("codigo, rec_codigo, tipo, rank")
+    .order("rank", { ascending: true })
+    .limit(50000);
+  // Tolerante: si la tabla aún no existe o falla, el catálogo sigue sin recs.
+  if (error) {
+    console.warn(`getInventory: recomendaciones no disponibles (${error.message})`);
+    return map;
+  }
+  for (const r of data ?? []) {
+    let e = map.get(r.codigo);
+    if (!e) map.set(r.codigo, (e = { comp: [], sim: [] }));
+    (r.tipo === "complemento" ? e.comp : e.sim).push(r.rec_codigo);
+  }
+  return map;
+}
 
 async function fetchInventory(): Promise<InventoryRow[]> {
   const db = publicClient();
-  const { data, error } = await db
-    .from("productos")
-    .select("codigo, nombre_web, marca, categoria, unidad_medida, precio_final, web")
-    .eq("web", true)
-    .order("categoria", { ascending: true })
-    .order("nombre_web", { ascending: true })
-    .limit(5000);
+  const [{ data, error }, recs] = await Promise.all([
+    db
+      .from("productos")
+      .select("codigo, nombre_web, marca, categoria, unidad_medida, precio_final, web")
+      .eq("web", true)
+      .order("categoria", { ascending: true })
+      .order("nombre_web", { ascending: true })
+      .limit(5000),
+    fetchRecsMap(db),
+  ]);
   if (error) throw new Error(`getInventory: ${error.message}`);
 
-  return (data ?? []).map((p) => ({
-    CODIGO: p.codigo,
-    "NOMBRE PARA WEB": p.nombre_web,
-    MARCA: p.marca,
-    CATEGORIA: p.categoria,
-    "UNIDAD DE MEDIDA": p.unidad_medida,
-    "PRECIO FINAL": Number(p.precio_final),
-    WEB: p.web ? "Activado" : "",
-  }));
+  return (data ?? []).map((p) => {
+    const r = recs.get(p.codigo);
+    return {
+      CODIGO: p.codigo,
+      "NOMBRE PARA WEB": p.nombre_web,
+      MARCA: p.marca,
+      CATEGORIA: p.categoria,
+      "UNIDAD DE MEDIDA": p.unidad_medida,
+      "PRECIO FINAL": Number(p.precio_final),
+      WEB: p.web ? "Activado" : "",
+      recs_comp: r?.comp ?? [],
+      recs_sim: r?.sim ?? [],
+    };
+  });
 }
 
 /**

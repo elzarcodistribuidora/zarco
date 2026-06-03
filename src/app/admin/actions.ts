@@ -90,6 +90,40 @@ export async function updateCliente(
   }
 }
 
+export async function deleteCliente(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const supabase = await requireAdmin();
+    const id = String(formData.get("id"));
+
+    // Evita que un admin se borre a sí mismo (quedaría sin acceso al panel).
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: self } = await supabase
+        .from("clientes")
+        .select("id")
+        .eq("auth_user_id", user.id)
+        .single();
+      if (self && String(self.id) === id) {
+        return fail("No puedes eliminar tu propia cuenta.");
+      }
+    }
+
+    // FK seguras: pedidos.cliente_id → SET NULL (el pedido y su email quedan);
+    // carritos.cliente_id → CASCADE (se borra el carrito guardado).
+    const { error } = await supabase.from("clientes").delete().eq("id", id);
+    if (error) return fail(`No se pudo eliminar: ${error.message}`);
+    revalidatePath("/admin/clientes");
+    return ok();
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "Error desconocido");
+  }
+}
+
 export async function toggleCotizacionAtendida(
   _prev: ActionState,
   formData: FormData

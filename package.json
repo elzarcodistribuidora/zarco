@@ -10,6 +10,7 @@
     "mirror": "node scripts/mirror-webflow.mjs",
     "optimize": "node scripts/optimize-images.mjs",
     "build:pages": "node scripts/build-pages.mjs",
+    "build:recs": "node --env-file=.env.local scripts/build-recommendations.mjs",
     "build:favicons": "node scripts/build-favicons.mjs"
   },
   "dependencies": {

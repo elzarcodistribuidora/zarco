@@ -127,3 +127,14 @@ export function IconSearch(props: IconProps) {
     </svg>
   );
 }
+
+export function IconTrash(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 7h16" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+      <path d="M6 7v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7" />
+      <path d="M10 11v5M14 11v5" />
+    </svg>
+  );
+}

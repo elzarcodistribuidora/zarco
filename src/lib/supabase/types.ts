@@ -228,6 +228,42 @@ export type Database = {
         }
         Relationships: []
       }
+      recomendaciones: {
+        Row: {
+          codigo: string
+          rank: number
+          rec_codigo: string
+          tipo: string
+        }
+        Insert: {
+          codigo: string
+          rank?: number
+          rec_codigo: string
+          tipo: string
+        }
+        Update: {
+          codigo?: string
+          rank?: number
+          rec_codigo?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recomendaciones_codigo_fkey"
+            columns: ["codigo"]
+            isOneToOne: false
+            referencedRelation: "productos"
+            referencedColumns: ["codigo"]
+          },
+          {
+            foreignKeyName: "recomendaciones_rec_codigo_fkey"
+            columns: ["rec_codigo"]
+            isOneToOne: false
+            referencedRelation: "productos"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -4,25 +4,28 @@ import Link from "next/link";
 
 /**
  * Botón "Cargar más": navega a la misma página con un `n` mayor (cuántas filas
- * mostrar). Usa `scroll={false}` → la navegación es client-side (RSC) y agrega
- * filas SIN recargar, sin saltar el scroll y conservando lo que estés editando.
+ * mostrar), conservando los filtros activos (`params`). Usa `scroll={false}` →
+ * la navegación es client-side (RSC) y agrega filas SIN recargar, sin saltar el
+ * scroll y conservando lo que estés editando.
  */
 export function LoadMore({
-  q,
+  params,
   next,
   restantes,
 }: {
-  q?: string;
+  params: Record<string, string | undefined>;
   next: number;
   restantes: number;
 }) {
-  const params = new URLSearchParams();
-  if (q) params.set("q", q);
-  params.set("n", String(next));
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v) sp.set(k, v);
+  }
+  sp.set("n", String(next));
   return (
     <div className="border-t border-slate-100 p-3 text-center">
       <Link
-        href={`/admin/productos?${params.toString()}`}
+        href={`/admin/productos?${sp.toString()}`}
         scroll={false}
         prefetch={false}
         className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-[#0A2240] outline-none transition-all duration-150 hover:bg-slate-50 active:scale-[0.97]"

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { updateCliente } from "../actions";
+import { updateCliente, deleteCliente } from "../actions";
 import { RowForm } from "../ui/RowForm";
+import { DeleteForm } from "../ui/DeleteForm";
 import { SaveButton } from "../ui/SaveButton";
 
 export default async function ClientesAdmin() {
@@ -24,12 +25,15 @@ export default async function ClientesAdmin() {
 
       <div className="mt-6 space-y-3">
         {rows.map((c, i) => (
-          <RowForm
+          <div
             key={c.id}
+            className="admin-enter flex items-stretch gap-2"
+            style={{ "--i": Math.min(i + 1, 12) } as React.CSSProperties}
+          >
+          <RowForm
             action={updateCliente}
             savedMessage={`Guardado: ${c.nombre || c.email}`}
-            style={{ "--i": Math.min(i + 1, 12) } as React.CSSProperties}
-            className="admin-enter grid grid-cols-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] transition-shadow hover:shadow-md hover:shadow-slate-900/[0.06] md:grid-cols-[1.4fr_1.2fr_1fr_0.8fr_0.8fr_auto]"
+            className="grid flex-1 grid-cols-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] transition-shadow hover:shadow-md hover:shadow-slate-900/[0.06] md:grid-cols-[1.4fr_1.2fr_1fr_0.8fr_auto]"
           >
             <input type="hidden" name="id" value={c.id} />
             <div className="min-w-0">
@@ -81,9 +85,18 @@ export default async function ClientesAdmin() {
                 <option value="admin">admin</option>
               </select>
             </label>
-            <div />
             <SaveButton />
           </RowForm>
+            <DeleteForm
+              action={deleteCliente}
+              id={c.id}
+              title="Eliminar cliente"
+              confirmMessage={`¿Eliminar a ${
+                c.nombre || c.email
+              }? Esta acción no se puede deshacer. Sus pedidos se conservan (quedan sin cliente).`}
+              deletedMessage={`Eliminado: ${c.nombre || c.email}`}
+            />
+          </div>
         ))}
         {rows.length === 0 && (
           <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400">

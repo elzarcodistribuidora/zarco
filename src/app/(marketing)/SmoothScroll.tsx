@@ -20,6 +20,17 @@ export default function SmoothScroll() {
       smoothWheel: true,
       wheelMultiplier: 1.05, // cada giro de rueda avanza un pelín más
       touchMultiplier: 1.6, // gesto táctil con más recorrido
+      // Lenis secuestra el scroll de TODA la ventana. Sin esto, al abrir un
+      // panel con scroll propio (carrito lateral, drawer móvil, menús
+      // flotantes) la rueda/el gesto movía la página de fondo y el contenido
+      // interno "no bajaba". Devolviendo true aquí, Lenis ignora el evento y
+      // deja que el overflow nativo del panel scrollee. Cubre el carrito del
+      // catálogo (#cartDrawer / .cart-body), el drawer móvil y cualquier
+      // elemento marcado con data-lenis-prevent.
+      prevent: (node) =>
+        !!node.closest(
+          "#cartDrawer, .cart-drawer, #mobile-drawer, [data-lenis-prevent]"
+        ),
     });
 
     let raf = 0;

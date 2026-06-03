@@ -20,11 +20,19 @@ const CATEGORIAS = [
 export default async function ProductosAdmin({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; n?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    n?: string;
+    cat?: string;
+    min?: string;
+    max?: string;
+  }>;
 }) {
-  const { q, n } = await searchParams;
+  const { q, n, cat, min, max } = await searchParams;
   // `n` = cuántas filas mostrar (crece con "Cargar más"). Mín. una tanda.
   const limit = Math.max(PAGE, Math.min(Number(n) || PAGE, 5000));
+  const minNum = Number(min);
+  const maxNum = Number(max);
   const supabase = await createClient();
 
   let query = supabase
@@ -33,11 +41,16 @@ export default async function ProductosAdmin({
     .order("nombre_web", { ascending: true })
     .limit(limit);
   if (q) query = query.or(`nombre_web.ilike.%${q}%,codigo.ilike.%${q}%`);
+  if (cat) query = query.eq("categoria", cat);
+  if (min && Number.isFinite(minNum)) query = query.gte("precio_final", minNum);
+  if (max && Number.isFinite(maxNum)) query = query.lte("precio_final", maxNum);
 
   const { data: productos, count } = await query;
   const rows = productos ?? [];
   const total = count ?? 0;
   const restantes = total - rows.length;
+  const filtros = { q, cat, min, max }; // se conservan en "Cargar más"
+  const hayFiltro = !!(q || cat || min || max);
 
   return (
     <>
@@ -47,11 +60,11 @@ export default async function ProductosAdmin({
             Productos
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            {count ?? 0} en total{q ? ` · filtrando "${q}"` : ""} · mostrando{" "}
+            {hayFiltro ? `${total} coinciden` : `${total} en total`} · mostrando{" "}
             {rows.length}
           </p>
         </div>
-        <form className="flex gap-2">
+        <form className="flex flex-wrap items-end gap-2">
           <div className="relative">
             <IconSearch
               width={18}
@@ -61,13 +74,56 @@ export default async function ProductosAdmin({
             <input
               name="q"
               defaultValue={q ?? ""}
-              placeholder="Buscar por nombre o código…"
-              className="w-64 rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
+              placeholder="Nombre o código…"
+              className="w-56 rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
             />
           </div>
+          <select
+            name="cat"
+            defaultValue={cat ?? ""}
+            aria-label="Filtrar por categoría"
+            className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
+          >
+            <option value="">Todas las categorías</option>
+            {CATEGORIAS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <input
+            name="min"
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            defaultValue={min ?? ""}
+            placeholder="$ mín"
+            aria-label="Precio mínimo"
+            className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
+          />
+          <input
+            name="max"
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            defaultValue={max ?? ""}
+            placeholder="$ máx"
+            aria-label="Precio máximo"
+            className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
+          />
           <button className="rounded-lg bg-[#0A2240] px-4 py-2 text-sm font-semibold text-white outline-none transition-all duration-150 hover:bg-[#0c2c54] focus-visible:ring-2 focus-visible:ring-[#0A2240]/40 active:scale-[0.97]">
-            Buscar
+            Filtrar
           </button>
+          {hayFiltro && (
+            <a
+              href="/admin/productos"
+              className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-500 transition hover:text-[#A81200]"
+            >
+              Limpiar
+            </a>
+          )}
         </form>
       </div>
 
@@ -145,7 +201,11 @@ export default async function ProductosAdmin({
           </p>
         )}
         {restantes > 0 && (
-          <LoadMore q={q} next={rows.length + PAGE} restantes={restantes} />
+          <LoadMore
+            params={filtros}
+            next={rows.length + PAGE}
+            restantes={restantes}
+          />
         )}
       </div>
     </>
