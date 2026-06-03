@@ -2,11 +2,8 @@ import { signIn, auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 const MENSAJES: Record<string, string> = {
-  NoAutorizado:
-    "Tu cuenta no está registrada como cliente. Contacta a Matriz para darte de alta.",
-  Conexion: "No pudimos conectar con la Matriz. Intenta de nuevo en un momento.",
-  AccessDenied:
-    "Tu cuenta no está registrada como cliente. Contacta a Matriz para darte de alta.",
+  AccessDenied: "No se pudo iniciar sesión. Intenta de nuevo.",
+  Configuration: "Hubo un problema de configuración. Intenta más tarde.",
 };
 
 export default async function LoginPage({

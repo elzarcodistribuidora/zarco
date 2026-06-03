@@ -113,9 +113,11 @@ de cualquier email).
 **Auth + seguridad:** Auth.js v5 (`next-auth@beta`) con Google. Reutiliza el
 OAuth client existente (`655792493975-…apps.googleusercontent.com`).
 `middleware.ts` bloquea `/portal` sin sesión.
-- **Acceso solo para clientes registrados:** el callback `signIn` (en
-  `auth.ts`) consulta la Matriz y rechaza el login si el email no existe en
-  `CRM CLIENTES` (id `CLI-NUEVO`) → redirige a `/portal/login?error=NoAutorizado`.
+- **Registro abierto:** cualquiera entra con su Google y queda como "Cliente
+  Nuevo" en la Matriz (el objetivo es vender). El middleware solo exige sesión
+  iniciada para `/portal`; no hay lista blanca de clientes. (Si en el futuro se
+  quisiera restringir, se reañade un callback `signIn` que valide el email
+  contra `CRM CLIENTES`.)
 - **Token del Apps Script:** `lib/matriz.ts` manda `?token=APPS_SCRIPT_TOKEN`.
   El Apps Script debe validar ese token para `getUserSession` y los POST
   (datos sensibles por cliente). `getInventory` (catálogo/precios) queda
@@ -204,7 +206,7 @@ npm run build:pages  # regenerar src/webflow/*.json
 ## Estado de las mejoras post-migración
 
 - ✅ Imágenes optimizadas (WebP, -92%).
-- ✅ Seguridad del portal (solo clientes + token del Apps Script).
+- ✅ Seguridad del portal (registro abierto por Google + token del Apps Script).
 - ✅ SEO por página (title/description/OG + sitemap + robots).
 - ✅ Login unificado a Auth.js (se quitó el login viejo del navbar).
 - ✅ Body limpiado (-49%): se quitó CSS duplicado y basura embebida de Webflow.
