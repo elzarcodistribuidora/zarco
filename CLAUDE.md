@@ -27,18 +27,12 @@ src/
 │   │   ├── PageScripts.tsx         Re-ejecuta los <script> inline de Webflow
 │   │   ├── SmoothScroll.tsx        Lenis (scroll suave) en todo el público
 │   │   └── marketing.css           CSS de Lenis
-│   ├── portal/                     PORTAL DE CLIENTES (React + Tailwind)
-│   │   ├── layout.tsx              Importa globals.css (Tailwind) + Inter
-│   │   ├── page.tsx                Server Component: auth + fetch (sesión + catálogo)
-│   │   ├── PortalShell.tsx         Cliente: estado del carrito, header, envío, repetir
-│   │   ├── Catalog.tsx             Cliente: búsqueda, filtros, orden, paginación, añadir
-│   │   ├── CartDrawer.tsx          Cliente: carrito lateral, cantidades, total, envío
-│   │   ├── History.tsx             Cliente: historial + botón "Repetir pedido"
-│   │   ├── actions.ts              Server Actions: sendOrder, saveCart, signOutAction
-│   │   ├── format.ts               Helper de moneda MXN
-│   │   └── login/page.tsx          "Entrar con Google" (Server Action signIn)
+│   ├── portal/                     PORTAL DE CLIENTES (Tailwind)
+│   │   ├── layout.tsx              Importa globals.css (Tailwind) + fuente
+│   │   ├── page.tsx                Dashboard: nivel, estatus, pedidos, catálogo
+│   │   └── login/page.tsx          "Entrar con Google"
 │   ├── api/auth/[...nextauth]/     Endpoint de Auth.js
-├── proxy.ts                        Protege /portal (Next 16: middleware → proxy)
+│   └── middleware.ts               Protege /portal (sin sesión → login)
 ├── auth.ts                         Config Auth.js (Google)
 ├── lib/matriz.ts                   Conector al backend (Apps Script)
 ├── components/
@@ -116,44 +110,11 @@ la sesión verificada, nunca del cliente). Esto **arregla un hueco de seguridad*
 del portal viejo, que confiaba en `localStorage` (cualquiera podía leer pedidos
 de cualquier email).
 
-### Portal React (reconstruido, NO el cascarón de Webflow)
-
-El portal viejo de Webflow (`/perfil`) tenía un motor JS de carrito/sesión que
-dependía de `localStorage.zarcoUser` (el login viejo con Google Identity
-Services). Al unificar a Auth.js ese login se quitó, así que el motor quedó roto
-(creía que todos eran "Invitado"). Se decidió (junio 2026) **reconstruir todo el
-portal en React/Tailwind**, desacoplado de Webflow:
-
-- `portal/page.tsx` (Server Component): saca el email de la sesión, llama
-  `getInventory()` + `getUserSession(email)` en paralelo y pasa los datos a
-  `PortalShell`. Es `force-dynamic` (datos por cliente).
-- `PortalShell.tsx` (cliente): dueño del estado del carrito (`Record<code,item>`).
-  Header con perfil (nombre/estatus/id) + logout, tarjetas resumen, catálogo,
-  historial, botón flotante y drawer. Sincroniza el carrito a la nube con
-  `saveCart` (debounced 800ms).
-- `Catalog.tsx`: búsqueda (nombre/código/marca), filtro por categoría y unidad,
-  orden, paginación (24/pág) y añadir con cantidad. Mantiene `id="productBody"`.
-- `CartDrawer.tsx`: cantidades, total, barra de envío gratis (umbral $3000), y
-  el botón de enviar.
-- `History.tsx`: tabla FOLIO/FECHA/TOTAL/ESTATUS + **"Repetir pedido"** (parsea
-  el `resumen` `"2x Nombre (CODE)"` y rearma el carrito con precios actuales).
-- `actions.ts` (Server Actions):
-  - `sendOrder(items)` — **envío seguro**: identidad y email salen de la sesión
-    (no del cliente), registra en la Matriz (`saveOrder`), vacía el carrito en
-    la nube y devuelve `{ folio, waUrl }`. El cliente abre WhatsApp prellenado
-    al número de la matriz (`522298477440`). **Checkout dual** (Sheets + WhatsApp),
-    igual que el negocio operaba.
-  - `saveCart(items)` — sincroniza el carrito (`syncCart`).
-  - `signOutAction()` — cierra sesión → `/`.
-- `login/page.tsx`: botón "Entrar con Google" vía Server Action (`signIn`).
-- `/perfil` ahora **redirige a `/portal`** (308, en `next.config.ts`).
-
 **Auth + seguridad:** Auth.js v5 (`next-auth@beta`) con Google. Reutiliza el
 OAuth client existente (`655792493975-…apps.googleusercontent.com`).
-**`src/proxy.ts`** (Next 16 renombró *middleware* → *proxy*) bloquea `/portal`
-sin sesión usando el callback `authorized` de `auth.ts`.
+`middleware.ts` bloquea `/portal` sin sesión.
 - **Registro abierto:** cualquiera entra con su Google y queda como "Cliente
-  Nuevo" en la Matriz (el objetivo es vender). El proxy solo exige sesión
+  Nuevo" en la Matriz (el objetivo es vender). El middleware solo exige sesión
   iniciada para `/portal`; no hay lista blanca de clientes. (Si en el futuro se
   quisiera restringir, se reañade un callback `signIn` que valide el email
   contra `CRM CLIENTES`.)
@@ -200,8 +161,8 @@ sin sesión usando el callback `authorized` de `auth.ts`.
   - **/catalogo** → `<Preloader waitForSelector="#productBody" />`: la barra
     espera a que la tabla de productos tenga filas antes de revelar, para que el
     cliente vea el catálogo ya cargado y no espere a que aparezca.
-  - **/portal** → SSR instantáneo (los datos vienen del servidor antes de
-    renderizar), así que **no usa preloader**.
+  - **/portal** → `<Preloader />`: los datos vienen del servidor (SSR), así que
+    solo cubre la entrada y revela todo listo.
   - Las páginas estáticas (home, nosotros, categorías…) **no llevan preloader**.
 - Todo respeta `prefers-reduced-motion`.
 
@@ -211,15 +172,11 @@ sin sesión usando el callback `authorized` de `auth.ts`.
 
 - `AUTH_SECRET` — ya generado.
 - `AUTH_GOOGLE_ID` — el OAuth client existente (ya puesto).
-- `AUTH_GOOGLE_SECRET` — ✅ ya puesto (Google Cloud, mismo client).
+- `AUTH_GOOGLE_SECRET` — **PENDIENTE** (sacarlo de Google Cloud, mismo client).
 - `APPS_SCRIPT_URL` — backend Apps Script (ya puesto, vivo).
 - `APPS_SCRIPT_TOKEN` — token compartido para blindar el Apps Script (opcional
   hasta que pegues el snippet en el script).
 - `NEXT_PUBLIC_SITE_URL` — URL pública del sitio (SEO/sitemap/OG).
-
-> Estas variables también deben estar cargadas en **Vercel** (Project Settings →
-> Environment Variables), y `NEXT_PUBLIC_SITE_URL` con el dominio real. Agrega el
-> redirect URI de Google del dominio: `https://TU-DOMINIO/api/auth/callback/google`.
 
 ---
 
@@ -238,19 +195,12 @@ npm run build:pages  # regenerar src/webflow/*.json
 
 ## Pendientes / siguientes pasos
 
-1. ✅ `AUTH_GOOGLE_SECRET` puesto (login del portal funcional).
-2. ✅ Deploy a Vercel + dominio propio conectado.
-3. Pegar el snippet del token en el Apps Script + poner `APPS_SCRIPT_TOKEN`
-   (en `.env.local` y en Vercel) para activar el blindaje del endpoint sensible.
-   Ahora que los POST de pedidos (`saveOrder`/`syncCart`) viajan por aquí, esto
-   deja de ser opcional. (`getInventory` sigue abierto: lo lee el navegador.)
-4. **Catálogo público (`/catalogo` de Webflow):** su motor de carrito viejo
-   sigue ahí pero **roto** (depende del `localStorage.zarcoUser` eliminado). El
-   carrito/pedidos reales ahora viven en `/portal`. Falta decidir: dejar
-   `/catalogo` como vitrina pública (SEO) y mandar el "enviar pedido" a `/portal`,
-   o redirigir `/catalogo` → `/portal`. No bloquea, pero su botón de enviar abre
-   un modal muerto.
-5. Mejora futura: migrar el Google Sheet a una DB real (Supabase/Postgres) sin
+1. `AUTH_GOOGLE_SECRET` para dejar el login del portal 100% funcional.
+2. Pegar el snippet del token en el Apps Script + poner `APPS_SCRIPT_TOKEN`
+   para activar el blindaje del endpoint sensible.
+3. **Deploy a Vercel** (instalar `vercel` CLI) + conectar el dominio propio
+   (y poner `NEXT_PUBLIC_SITE_URL` con el dominio real).
+4. Mejora futura: migrar el Google Sheet a una DB real (Supabase/Postgres) sin
    tocar el front (el portal ya está desacoplado vía `lib/matriz.ts`).
 
 ## Estado de las mejoras post-migración
@@ -259,9 +209,6 @@ npm run build:pages  # regenerar src/webflow/*.json
 - ✅ Seguridad del portal (registro abierto por Google + token del Apps Script).
 - ✅ SEO por página (title/description/OG + sitemap + robots).
 - ✅ Login unificado a Auth.js (se quitó el login viejo del navbar).
-- ✅ **Portal de clientes reconstruido en React/Tailwind** (perfil, catálogo con
-  carrito, historial, repetir pedido). Checkout dual (Sheets + WhatsApp) con
-  envío **server-side** (email de la sesión). `/portal` protegido por `proxy.ts`.
 - ✅ Body limpiado (-49%): se quitó CSS duplicado y basura embebida de Webflow.
 - ⏳ Alt text de imágenes / nombres descriptivos: el alt importa más que el
   nombre de archivo; los `<img>` conservan el alt de Webflow. Renombrar los
