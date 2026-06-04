@@ -127,85 +127,102 @@ export default async function ProductosAdmin({
         </form>
       </div>
 
-      <div className="admin-enter mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/[0.03]" style={{ "--i": 1 } as React.CSSProperties}>
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
-            <tr>
-              <th className="px-4 py-3">Código</th>
-              <th className="px-4 py-3">Nombre</th>
-              <th className="px-4 py-3">Categoría</th>
-              <th className="px-4 py-3 w-32">Precio</th>
-              <th className="px-4 py-3 w-16">Web</th>
-              <th className="px-4 py-3 w-24"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {rows.map((p) => (
-              <tr key={p.codigo} className="transition-colors hover:bg-slate-50/70">
-                <td className="px-4 py-2 font-mono text-xs text-slate-500">
-                  {p.codigo}
-                </td>
-                <td colSpan={5} className="p-0">
-                  <RowForm
-                    action={updateProducto}
-                    savedMessage={`Guardado: ${p.nombre_web}`}
-                    className="grid grid-cols-[1fr_160px_120px_48px_88px] items-center gap-2 px-4 py-2"
-                  >
-                    <input type="hidden" name="codigo" value={p.codigo} />
-                    <input
-                      name="nombre_web"
-                      defaultValue={p.nombre_web}
-                      className="rounded-md border border-slate-200 px-2 py-1.5 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
-                    />
-                    <select
-                      name="categoria"
-                      defaultValue={p.categoria ?? ""}
-                      className="cursor-pointer rounded-md border border-slate-200 bg-white px-2 py-1.5 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
-                    >
-                      <option value="">— Sin categoría —</option>
-                      {CATEGORIAS.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                      {/* Si el producto trae una categoría fuera de la lista,
-                          la conservamos como opción para no perderla al guardar. */}
-                      {p.categoria &&
-                        !CATEGORIAS.some((c) => c.value === p.categoria) && (
-                          <option value={p.categoria}>{p.categoria}</option>
-                        )}
-                    </select>
-                    <input
-                      name="precio_final"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      defaultValue={Number(p.precio_final)}
-                      className="rounded-md border border-slate-200 px-2 py-1.5 text-right outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
-                    />
-                    <ToggleSwitch
-                      name="web"
-                      defaultChecked={p.web}
-                      title="Mostrar en la web"
-                    />
-                    <SaveButton className="px-3 py-1.5 text-xs" />
-                  </RowForm>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Encabezado de columnas: solo en escritorio. En móvil cada producto
+          es una tarjeta apilada (con sus propias etiquetas) para que nada se
+          corte. */}
+      <div className="mt-6 space-y-2 md:space-y-1.5">
+        <div
+          className="admin-enter hidden gap-3 px-4 text-xs font-semibold uppercase tracking-wide text-slate-400 md:grid md:grid-cols-[110px_1fr_170px_120px_56px_auto] md:items-center"
+          style={{ "--i": 1 } as React.CSSProperties}
+        >
+          <span>Código</span>
+          <span>Nombre</span>
+          <span>Categoría</span>
+          <span className="text-right">Precio</span>
+          <span className="text-center">Web</span>
+          <span />
+        </div>
+
+        {rows.map((p, i) => (
+          <RowForm
+            key={p.codigo}
+            action={updateProducto}
+            savedMessage={`Guardado: ${p.nombre_web}`}
+            style={{ "--i": Math.min(i + 2, 12) } as React.CSSProperties}
+            className="admin-enter grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/[0.03] transition-shadow hover:shadow-md hover:shadow-slate-900/[0.06] md:grid-cols-[110px_1fr_170px_120px_56px_auto] md:items-center md:gap-3 md:rounded-xl md:py-2.5"
+          >
+            <input type="hidden" name="codigo" value={p.codigo} />
+            <div className="font-mono text-xs text-slate-500">
+              <span className="mr-2 font-sans font-medium uppercase tracking-wide text-slate-400 md:hidden">
+                Código
+              </span>
+              {p.codigo}
+            </div>
+            <label className="block text-xs font-medium text-slate-400 md:contents">
+              <span className="md:hidden">Nombre</span>
+              <input
+                name="nombre_web"
+                defaultValue={p.nombre_web}
+                className="mt-1 w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm text-slate-900 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15 md:mt-0"
+              />
+            </label>
+            <label className="block text-xs font-medium text-slate-400 md:contents">
+              <span className="md:hidden">Categoría</span>
+              <select
+                name="categoria"
+                defaultValue={p.categoria ?? ""}
+                className="mt-1 w-full cursor-pointer rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-900 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15 md:mt-0"
+              >
+                <option value="">— Sin categoría —</option>
+                {CATEGORIAS.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+                {/* Si el producto trae una categoría fuera de la lista,
+                    la conservamos como opción para no perderla al guardar. */}
+                {p.categoria &&
+                  !CATEGORIAS.some((c) => c.value === p.categoria) && (
+                    <option value={p.categoria}>{p.categoria}</option>
+                  )}
+              </select>
+            </label>
+            <label className="block text-xs font-medium text-slate-400 md:contents">
+              <span className="md:hidden">Precio</span>
+              <input
+                name="precio_final"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={Number(p.precio_final)}
+                className="mt-1 w-full rounded-md border border-slate-200 px-2 py-1.5 text-right text-sm text-slate-900 outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15 md:mt-0"
+              />
+            </label>
+            <label className="flex items-center justify-between gap-2 text-xs font-medium text-slate-400 md:contents">
+              <span className="md:hidden">Mostrar en la web</span>
+              <ToggleSwitch
+                name="web"
+                defaultChecked={p.web}
+                title="Mostrar en la web"
+              />
+            </label>
+            <SaveButton className="w-full px-3 py-1.5 text-xs md:w-auto" />
+          </RowForm>
+        ))}
+
         {rows.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-slate-400">
+          <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
             Sin resultados.
           </p>
         )}
         {restantes > 0 && (
-          <LoadMore
-            params={filtros}
-            next={rows.length + PAGE}
-            restantes={restantes}
-          />
+          <div className="pt-1">
+            <LoadMore
+              params={filtros}
+              next={rows.length + PAGE}
+              restantes={restantes}
+            />
+          </div>
         )}
       </div>
     </>
