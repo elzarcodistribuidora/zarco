@@ -39,20 +39,27 @@ async function fetchRecsMap(
   db: ReturnType<typeof publicClient>
 ): Promise<Map<string, { comp: string[]; sim: string[] }>> {
   const map = new Map<string, { comp: string[]; sim: string[] }>();
-  const { data, error } = await db
-    .from("recomendaciones")
-    .select("codigo, rec_codigo, tipo, rank")
-    .order("rank", { ascending: true })
-    .limit(50000);
-  // Tolerante: si la tabla aún no existe o falla, el catálogo sigue sin recs.
-  if (error) {
-    console.warn(`getInventory: recomendaciones no disponibles (${error.message})`);
-    return map;
-  }
-  for (const r of data ?? []) {
-    let e = map.get(r.codigo);
-    if (!e) map.set(r.codigo, (e = { comp: [], sim: [] }));
-    (r.tipo === "complemento" ? e.comp : e.sim).push(r.rec_codigo);
+  // PostgREST tope ~1000 filas por request → paginar con range() (son ~9k filas).
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await db
+      .from("recomendaciones")
+      .select("codigo, rec_codigo, tipo, rank")
+      .order("codigo", { ascending: true })
+      .order("tipo", { ascending: true })
+      .order("rank", { ascending: true })
+      .range(from, from + PAGE - 1);
+    // Tolerante: si la tabla aún no existe o falla, el catálogo sigue sin recs.
+    if (error) {
+      console.warn(`getInventory: recomendaciones no disponibles (${error.message})`);
+      return map;
+    }
+    for (const r of data ?? []) {
+      let e = map.get(r.codigo);
+      if (!e) map.set(r.codigo, (e = { comp: [], sim: [] }));
+      (r.tipo === "complemento" ? e.comp : e.sim).push(r.rec_codigo);
+    }
+    if (!data || data.length < PAGE) break;
   }
   return map;
 }

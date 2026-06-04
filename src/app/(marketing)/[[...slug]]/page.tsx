@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import PageScripts from "../PageScripts";
+import CatalogRecs from "../CatalogRecs";
 import Preloader from "@/components/Preloader";
 
 type PageMeta = { title: string; description: string; ogImage: string };
@@ -95,6 +96,8 @@ export default async function WebflowPage({
         dangerouslySetInnerHTML={{ __html: page.body }}
       />
       <PageScripts js={page.js ?? []} />
+      {/* Recomendaciones cross-sell / upsell (solo catálogo). */}
+      {name === "catalogo" && <CatalogRecs />}
     </>
   );
 }
