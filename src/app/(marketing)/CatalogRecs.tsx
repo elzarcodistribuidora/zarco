@@ -6,11 +6,14 @@ import { useEffect } from "react";
  * Recomendaciones del catálogo (cross-sell / upsell), montado SOLO en /catalogo.
  *
  * El catálogo es HTML/JS de Webflow; este componente NO renderiza en React, sino
- * que manipula el DOM (como PageScripts) y se comunica con el JS del catálogo a
- * través del puente `window.zarcoCatalog` (ver build-pages.mjs):
- *   - getCart()  → el Map del carrito ({id → {name, price, qty}})
- *   - add(id,…)  → handleProductSelection (agrega al carrito)
- *   - eventos `zarco:cart-updated` (al cambiar el carrito) y `zarco:bridge-ready`.
+ * que manipula el DOM (como PageScripts). Para ser robusto NO depende de poder
+ * leer variables léxicas del JS de Webflow:
+ *   - LEE el carrito de `localStorage.zarcoCartObjects` (el catálogo lo escribe
+ *     en cada cambio vía saveCartToStorage).
+ *   - DETECTA cambios con un MutationObserver sobre `#cartItemsList` (updateCartUI
+ *     reescribe su contenido en cada cambio) + el evento `zarco:cart-updated`.
+ *   - AGREGA vía el puente `window.zarcoCatalog.add` (→ handleProductSelection),
+ *     que es una función global del catálogo.
  *
  * Las recomendaciones precalculadas vienen en /api/inventory (recs_comp para
  * cross-sell / complementos, recs_sim para upsell / similares).
@@ -21,6 +24,7 @@ import { useEffect } from "react";
  */
 
 type Prod = { name: string; price: number; comp: string[]; sim: string[] };
+type CartItem = { name: string; price: number; qty: number };
 
 const mxn = new Intl.NumberFormat("es-MX", {
   style: "currency",
@@ -36,11 +40,11 @@ export default function CatalogRecs() {
     let prevKeys = new Set<string>();
     let suppressUntil = 0; // evita popover al agregar desde una recomendación
     let popoverTimer: ReturnType<typeof setTimeout> | null = null;
-    let ready = false;
+    let mo: MutationObserver | null = null;
+    let cancelled = false;
 
     const win = window as unknown as {
       zarcoCatalog?: {
-        getCart?: () => Map<string, { name: string; price: number; qty: number }> | null;
         add?: (id: string, name: string, price: number, qty?: number) => boolean;
       };
     };
@@ -74,17 +78,25 @@ export default function CatalogRecs() {
       document.head.appendChild(s);
     }
 
-    // ---------- helpers ----------
-    function getCartEntries(): Array<[string, { name: string; price: number; qty: number }]> {
-      const cart = win.zarcoCatalog?.getCart?.();
-      return cart ? Array.from(cart.entries()) : [];
+    // ---------- estado del carrito (desde localStorage) ----------
+    function getCartEntries(): Array<[string, CartItem]> {
+      try {
+        const raw = localStorage.getItem("zarcoCartObjects");
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) return arr as Array<[string, CartItem]>;
+        }
+      } catch {
+        /* ignore */
+      }
+      return [];
     }
 
     function addRec(code: string) {
       const p = index.get(code);
-      if (!p || !win.zarcoCatalog?.add) return;
+      if (!p) return;
       suppressUntil = Date.now() + 1500;
-      win.zarcoCatalog.add(code, p.name, p.price);
+      win.zarcoCatalog?.add?.(code, p.name, p.price);
     }
 
     function card(code: string): HTMLElement | null {
@@ -101,7 +113,7 @@ export default function CatalogRecs() {
       const btn = document.createElement("button");
       btn.className = "zr-add";
       btn.type = "button";
-      btn.innerHTML = "＋ Agregar";
+      btn.textContent = "＋ Agregar";
       btn.addEventListener("click", () => {
         addRec(code);
         btn.classList.add("zr-done");
@@ -229,8 +241,8 @@ export default function CatalogRecs() {
     function onCartUpdated() {
       ensureStyles();
       renderCrossSell();
-      const cart = win.zarcoCatalog?.getCart?.();
-      const keys = new Set<string>(cart ? Array.from(cart.keys()) : []);
+      const entries = getCartEntries();
+      const keys = new Set<string>(entries.map(([id]) => id));
       const added = [...keys].filter((k) => !prevKeys.has(k));
       prevKeys = keys;
       if (added.length && Date.now() > suppressUntil) {
@@ -238,17 +250,27 @@ export default function CatalogRecs() {
       }
     }
 
-    function onBridgeReady() {
-      ready = true;
+    // ---------- arranque: observar #cartItemsList + sembrar estado ----------
+    function attach() {
+      if (cancelled) return false;
+      const list = document.getElementById("cartItemsList");
+      if (!list) return false;
       ensureStyles();
-      // Sembrar el estado inicial del carrito (sin disparar popover).
-      const cart = win.zarcoCatalog?.getCart?.();
-      prevKeys = new Set<string>(cart ? Array.from(cart.keys()) : []);
+      prevKeys = new Set<string>(getCartEntries().map(([id]) => id)); // sin popover inicial
+      mo = new MutationObserver(() => onCartUpdated());
+      mo.observe(list, { childList: true, subtree: true });
       renderCrossSell();
+      return true;
+    }
+
+    // El #cartItemsList viene en el HTML inicial; reintenta por si aún no montó.
+    let tries = 0;
+    function tryAttach() {
+      if (attach()) return;
+      if (tries++ < 40) setTimeout(tryAttach, 150);
     }
 
     // ---------- carga del índice de recomendaciones ----------
-    let cancelled = false;
     fetch("/api/inventory")
       .then((r) => r.json())
       .then((rows: Record<string, unknown>[]) => {
@@ -263,19 +285,18 @@ export default function CatalogRecs() {
             sim: Array.isArray(row["recs_sim"]) ? (row["recs_sim"] as string[]) : [],
           });
         }
-        if (ready) renderCrossSell();
+        renderCrossSell();
       })
       .catch(() => {});
 
+    // Evento del puente (refuerzo del MutationObserver).
     document.addEventListener("zarco:cart-updated", onCartUpdated);
-    document.addEventListener("zarco:bridge-ready", onBridgeReady);
-    // Si el puente ya corrió antes de montar este efecto.
-    if ((window as unknown as { __zarcoBridge?: number }).__zarcoBridge) onBridgeReady();
+    tryAttach();
 
     return () => {
       cancelled = true;
       document.removeEventListener("zarco:cart-updated", onCartUpdated);
-      document.removeEventListener("zarco:bridge-ready", onBridgeReady);
+      mo?.disconnect();
       if (popoverTimer) clearTimeout(popoverTimer);
       document.getElementById("zarco-xsell")?.remove();
       document.getElementById("zarco-upsell")?.remove();

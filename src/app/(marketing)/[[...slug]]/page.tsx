@@ -70,9 +70,12 @@ export async function generateMetadata({
 // Genera todas las rutas estáticas en build (/, /nosotros, /contacto, ...).
 export async function generateStaticParams() {
   const index = await loadIndex();
-  return index.map((slug) => ({
-    slug: slug === "index" ? [] : [slug],
-  }));
+  // `/perfil` lo sirve su propia ruta React (perfil/page.tsx), no el catch-all.
+  return index
+    .filter((slug) => slug !== "perfil")
+    .map((slug) => ({
+      slug: slug === "index" ? [] : [slug],
+    }));
 }
 
 export default async function WebflowPage({
