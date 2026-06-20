@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 /**
  * Transición suave entre páginas del sitio público.
@@ -15,6 +16,16 @@ import { useEffect } from "react";
  * Se respeta `prefers-reduced-motion`: si está activo, no intercepta nada.
  */
 export default function PageTransition() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Cuando el enrutador de Next.js cambia la URL sin recargar la página (SPA),
+    // debemos quitar la clase de salida para que aparezca la nueva página.
+    document.documentElement.classList.remove("wf-leaving");
+  }, [pathname, searchParams]);
+
   useEffect(() => {
     const root = document.documentElement;
     // Al volver con el caché de "atrás/adelante" (bfcache) la página puede
@@ -69,7 +80,7 @@ export default function PageTransition() {
       e.preventDefault();
       root.classList.add("wf-leaving");
       window.setTimeout(() => {
-        location.href = url.href;
+        router.push(url.pathname + url.search + url.hash);
       }, 200);
     };
 
