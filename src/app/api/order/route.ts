@@ -2,6 +2,7 @@
 // El email/cliente sale de la SESIÓN (no del body) → seguro. Devuelve el mismo
 // shape que esperaba el catálogo: { status: "Success", folio }.
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 
 type Item = { codigo: string; nombre: string; cantidad: number };

@@ -2,6 +2,7 @@
 // Inserta con service-role (bypass RLS); solo el admin las lee en /admin/cotizaciones.
 // Devuelve { status, folio } para que el form de contacto muestre el folio.
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Recorta para evitar abuso/spam con payloads enormes.

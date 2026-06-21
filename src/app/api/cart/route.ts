@@ -1,6 +1,7 @@
 // Carrito en la nube (savedCart) en Supabase. Reemplaza al ?action=syncCart.
 // Body del catálogo: { action:"syncCart", email, cart: "<stringified [[id,obj],...]>" }.
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {

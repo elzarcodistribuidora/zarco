@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Inter } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "./ui/Sidebar";
 import { ToastProvider } from "./ui/Toaster";
 import "../globals.css";
 import "./admin.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Admin — El Zarco",
@@ -33,7 +30,7 @@ export default async function AdminLayout({
   if (cliente?.role !== "admin") redirect("/perfil");
 
   return (
-    <div className={`${inter.className} min-h-screen bg-slate-50 text-slate-900`}>
+    <div className={`font-sans min-h-screen bg-slate-50 text-slate-900`}>
       <ToastProvider>
         <div className="flex min-h-screen flex-col lg:flex-row">
           <Sidebar

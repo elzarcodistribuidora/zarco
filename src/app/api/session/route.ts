@@ -2,6 +2,7 @@
 // Reemplaza al ?action=getUserSession del Apps Script. El email sale de la
 // sesión verificada (RLS), nunca del cliente → cierra el hueco viejo.
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import "./marketing.css";
 import SmoothScroll from "./SmoothScroll";
 import PageTransition from "./PageTransition";
@@ -26,7 +27,9 @@ export default function MarketingLayout({
       {/* Scroll suave en todo el sitio. El preloader vive solo en las
           páginas que cargan datos (catálogo y portal). */}
       <SmoothScroll />
-      <PageTransition />
+      <Suspense fallback={null}>
+        <PageTransition />
+      </Suspense>
       {children}
     </>
   );
