@@ -7,6 +7,7 @@ import { LoadMore } from "../ui/LoadMore";
 import { IconSearch } from "../ui/icons";
 
 import { AddProductButton } from "../ui/AddProductButton";
+import { ExportButton } from "../ui/ExportButton";
 
 const PAGE = 100; // cuántos productos por "tanda" (botón Cargar más)
 
@@ -66,7 +67,10 @@ export default async function ProductosAdmin({
             {rows.length}
           </p>
         </div>
-        <AddProductButton />
+        <div className="flex items-center gap-3">
+          <ExportButton type="productos" />
+          <AddProductButton />
+        </div>
       </div>
 
       <div className="admin-enter mt-6 mb-4 flex flex-wrap items-end gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-slate-900/[0.02] border border-slate-100">

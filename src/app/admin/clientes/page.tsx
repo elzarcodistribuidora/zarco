@@ -3,24 +3,73 @@ import { updateCliente, deleteCliente } from "../actions";
 import { RowForm } from "../ui/RowForm";
 import { DeleteForm } from "../ui/DeleteForm";
 import { SaveButton } from "../ui/SaveButton";
+import { ExportButton } from "../ui/ExportButton";
+import { IconSearch } from "../ui/icons";
 
-export default async function ClientesAdmin() {
+export default async function ClientesAdmin({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
-  const { data: clientes } = await supabase
+  
+  let query = supabase
     .from("clientes")
-    .select("id, email, nombre, estatus, nivel, role, created_at")
+    .select("id, email, nombre, estatus, nivel, role, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(500);
+    
+  if (q) {
+    query = query.or(`email.ilike.%${q}%,nombre.ilike.%${q}%`);
+  }
 
+  const { data: clientes, count } = await query;
   const rows = clientes ?? [];
+  const total = count ?? 0;
+  const hayFiltro = !!q;
 
   return (
     <>
-      <div className="admin-enter">
-        <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
-          Clientes
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">{rows.length} registrados</p>
+      <div className="admin-enter flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
+            Clientes
+          </h1>
+          <p className="mt-1 text-sm font-medium text-slate-500">
+            {hayFiltro ? `${total} coinciden` : `${total} registrados`}
+          </p>
+        </div>
+        <ExportButton type="clientes" />
+      </div>
+
+      <div className="admin-enter mt-6 flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-slate-900/[0.02] border border-slate-100">
+        <form className="flex w-full items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <IconSearch
+              width={18}
+              height={18}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Buscar por nombre o correo..."
+              className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15"
+            />
+          </div>
+          <button className="rounded-lg bg-[#0A2240] px-4 py-2 text-sm font-semibold text-white outline-none transition-all duration-150 hover:bg-[#0c2c54] focus-visible:ring-2 focus-visible:ring-[#0A2240]/40 active:scale-[0.97]">
+            Buscar
+          </button>
+          {hayFiltro && (
+            <a
+              href="/admin/clientes"
+              className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-500 transition hover:text-[#A81200]"
+            >
+              Limpiar
+            </a>
+          )}
+        </form>
       </div>
 
       <div className="mt-6 space-y-3">

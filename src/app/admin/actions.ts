@@ -202,3 +202,26 @@ export async function updatePedidoStatus(
     return fail(e instanceof Error ? e.message : "Error desconocido");
   }
 }
+
+export async function getPedidoItems(pedidoId: string) {
+  try {
+    const supabase = await requireAdmin();
+    const { data: items, error } = await supabase
+      .from("pedido_items")
+      .select("*")
+      .eq("pedido_id", pedidoId);
+      
+    if (error) throw error;
+    
+    // También obtenemos los datos del pedido principal
+    const { data: pedido } = await supabase
+      .from("pedidos")
+      .select("*")
+      .eq("id", pedidoId)
+      .single();
+      
+    return { ok: true, items: items ?? [], pedido: pedido ?? null };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Error al cargar los detalles del pedido" };
+  }
+}
