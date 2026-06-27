@@ -148,35 +148,42 @@ export default async function PedidosAdmin({
             </div>
 
             <div>
-              <div className="mb-2 flex items-center justify-between gap-2 md:justify-start">
-                <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                    STATUS_STYLE[p.status] ?? "bg-slate-100 text-slate-600"
-                  }`}
+              <div className="flex flex-col items-start gap-2.5">
+                <RowForm
+                  action={updatePedidoStatus}
+                  savedMessage={`Pedido actualizado`}
+                  className="flex items-center gap-2"
                 >
-                  {p.status}
-                </span>
+                  <input type="hidden" name="id" value={p.id} />
+                  <div className="relative">
+                    <select
+                      name="status"
+                      defaultValue={p.status}
+                      className={`appearance-none cursor-pointer rounded-full py-1 pl-3 pr-7 text-[11px] font-bold uppercase tracking-wide outline-none ring-1 ring-inset ring-black/5 transition hover:brightness-95 focus:ring-2 focus:ring-black/20 ${
+                        STATUS_STYLE[p.status] ?? "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {STATUSES.map((s) => (
+                        <option key={s} value={s} className="bg-white font-medium text-slate-900 normal-case tracking-normal">
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 opacity-50">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                  </div>
+                  <SaveButton 
+                    variant="ghost" 
+                    className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full border-transparent bg-slate-100 p-0 text-slate-400 hover:bg-[#0A2240] hover:text-white"
+                    pendingLabel=""
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </SaveButton>
+                </RowForm>
+
                 <OrderDetailsButton pedidoId={p.id} folio={p.folio} />
               </div>
-              <RowForm
-                action={updatePedidoStatus}
-                savedMessage={`Pedido ${p.folio} actualizado`}
-                className="flex gap-2"
-              >
-                <input type="hidden" name="id" value={p.id} />
-                <select
-                  name="status"
-                  defaultValue={p.status}
-                  className="flex-1 cursor-pointer rounded-md border border-slate-200 px-2 py-1.5 text-xs outline-none transition focus:border-[#0A2240] focus:ring-2 focus:ring-[#0A2240]/15 md:flex-none"
-                >
-                  {STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <SaveButton className="px-3 py-1.5 text-xs" />
-              </RowForm>
             </div>
           </div>
         ))}

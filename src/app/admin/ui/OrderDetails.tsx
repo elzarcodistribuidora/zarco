@@ -16,9 +16,10 @@ export function OrderDetailsButton({ pedidoId, folio }: { pedidoId: string, foli
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-200 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-95"
+        className="group flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-500 transition-all hover:bg-slate-100 hover:text-[#0A2240] active:scale-95"
       >
-        Ver detalles
+        <span>Detalles</span>
+        <svg className="transition-transform group-hover:translate-x-0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       </button>
 
       {isOpen && <OrderDetailsModal pedidoId={pedidoId} folio={folio} onClose={() => setIsOpen(false)} />}
