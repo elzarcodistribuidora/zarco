@@ -31,6 +31,44 @@ async function requireAdmin() {
   return supabase;
 }
 
+export async function createProducto(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const supabase = await requireAdmin();
+    const codigo = String(formData.get("codigo") ?? "").trim();
+    if (!codigo) return fail("El código es obligatorio");
+
+    // Verificar si existe el código
+    const { data: existente } = await supabase
+      .from("productos")
+      .select("codigo")
+      .eq("codigo", codigo)
+      .maybeSingle();
+    
+    if (existente) return fail(`El código ${codigo} ya existe. Usa uno diferente.`);
+
+    const precio_final = Number(formData.get("precio_final"));
+    const insert = {
+      codigo,
+      nombre_web: String(formData.get("nombre_web") ?? "").trim() || "Nuevo Producto",
+      categoria: String(formData.get("categoria") ?? "").trim() || null,
+      precio_final: Number.isFinite(precio_final) ? precio_final : 0,
+      web: formData.get("web") === "on",
+    };
+
+    const { error } = await supabase.from("productos").insert(insert);
+    if (error) return fail(`No se pudo crear: ${error.message}`);
+
+    revalidateTag("inventory", "max");
+    revalidatePath("/admin/productos");
+    return ok();
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : "Error desconocido");
+  }
+}
+
 export async function updateProducto(
   _prev: ActionState,
   formData: FormData

@@ -6,6 +6,8 @@ import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { LoadMore } from "../ui/LoadMore";
 import { IconSearch } from "../ui/icons";
 
+import { AddProductButton } from "../ui/AddProductButton";
+
 const PAGE = 100; // cuántos productos por "tanda" (botón Cargar más)
 
 // Categorías disponibles en el desplegable (valor exacto guardado : etiqueta).
@@ -54,17 +56,21 @@ export default async function ProductosAdmin({
 
   return (
     <>
-      <div className="admin-enter flex flex-wrap items-end justify-between gap-3">
+      <div className="admin-enter flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
+          <h1 className="text-3xl font-black tracking-tight text-[#0A2240]">
             Productos
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 font-medium">
             {hayFiltro ? `${total} coinciden` : `${total} en total`} · mostrando{" "}
             {rows.length}
           </p>
         </div>
-        <form className="flex flex-wrap items-end gap-2">
+        <AddProductButton />
+      </div>
+
+      <div className="admin-enter mt-6 mb-4 flex flex-wrap items-end gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-slate-900/[0.02] border border-slate-100">
+        <form className="flex w-full flex-wrap items-end gap-3">
           <div className="relative">
             <IconSearch
               width={18}

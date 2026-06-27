@@ -30,14 +30,20 @@ export default async function AdminLayout({
   if (cliente?.role !== "admin") redirect("/perfil");
 
   return (
-    <div className={`font-sans min-h-screen bg-slate-50 text-slate-900`}>
+    <div className={`font-sans min-h-screen bg-slate-50 text-slate-900 relative selection:bg-[#0A2240] selection:text-white`}>
+      {/* Decorative background gradients */}
+      <div className="pointer-events-none fixed inset-0 flex justify-center z-0 overflow-hidden">
+        <div className="absolute -top-[20%] left-[-10%] h-[500px] w-[500px] rounded-full bg-gradient-to-br from-[#0A2240]/[0.03] to-transparent blur-3xl" />
+        <div className="absolute top-[40%] right-[-10%] h-[600px] w-[600px] rounded-full bg-gradient-to-tl from-[#A81200]/[0.02] to-transparent blur-3xl" />
+      </div>
+
       <ToastProvider>
-        <div className="flex min-h-screen flex-col lg:flex-row">
+        <div className="relative z-10 flex min-h-screen flex-col lg:flex-row">
           <Sidebar
             userName={cliente?.nombre ?? ""}
             email={user.email ?? ""}
           />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 sm:px-8">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-5 py-8 sm:px-8">
             {children}
           </main>
         </div>
