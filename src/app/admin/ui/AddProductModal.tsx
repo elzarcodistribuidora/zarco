@@ -70,7 +70,7 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
                 name="codigo" 
                 required 
                 placeholder="Ej. ZRC-1010"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10 placeholder:text-[#98989D] placeholder:font-normal"
               />
             </div>
             
@@ -80,7 +80,7 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
                 name="nombre_web" 
                 required 
                 placeholder="Nombre del producto"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10 placeholder:text-[#98989D] placeholder:font-normal"
               />
             </div>
 
@@ -89,9 +89,9 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
                 <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-400">Categoría</label>
                 <select 
                   name="categoria"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10 text-slate-700"
                 >
-                  <option value="">— Ninguna —</option>
+                  <option value="" className="text-[#98989D]">— Ninguna —</option>
                   {CATEGORIAS.map((c) => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
@@ -108,24 +108,28 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
                     min="0"
                     required
                     placeholder="0.00"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-8 pr-4 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-8 pr-4 text-sm outline-none transition focus:border-[#0A2240] focus:bg-white focus:ring-4 focus:ring-[#0A2240]/10 placeholder:text-[#98989D] placeholder:font-normal"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:bg-slate-50">
-              <input 
-                type="checkbox" 
-                id="chk-web"
-                name="web" 
-                defaultChecked 
-                className="h-5 w-5 rounded border-slate-300 text-[#0A2240] focus:ring-[#0A2240]"
-              />
+            <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-4 transition hover:bg-slate-50">
               <div>
                 <label htmlFor="chk-web" className="block cursor-pointer text-sm font-bold text-[#0A2240]">Mostrar en la web</label>
-                <p className="text-xs font-medium text-slate-500">Si lo desactivas, solo el admin podrá verlo.</p>
+                <p className="mt-0.5 text-xs font-medium text-slate-500">Si lo desactivas, solo el admin podrá verlo.</p>
               </div>
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  id="chk-web"
+                  name="web"
+                  defaultChecked
+                  className="peer sr-only"
+                />
+                <span className="h-7 w-12 rounded-full bg-[#E5E5EA] transition-colors duration-200 ease-out peer-checked:bg-[#007AFF] peer-focus-visible:ring-2 peer-focus-visible:ring-[#007AFF]/45 peer-focus-visible:ring-offset-1" />
+                <span className="pointer-events-none absolute left-[2px] top-1/2 h-[24px] w-[24px] -translate-y-1/2 rounded-full bg-white shadow-[0_3px_8px_rgba(0,0,0,0.15),0_3px_1px_rgba(0,0,0,0.06)] transition-transform duration-200 ease-out peer-checked:translate-x-5" />
+              </label>
             </div>
 
             {state.error && !state.idle && (
