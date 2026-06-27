@@ -16,7 +16,7 @@ export default async function AdminHome() {
       supabase.from("cotizaciones").select("*", { count: "exact", head: true }),
       supabase.from("cotizaciones").select("*", { count: "exact", head: true }).eq("atendido", false),
       supabase.from("pedidos").select("id, folio, email, total, status, fecha").order("fecha", { ascending: false }).limit(5),
-      supabase.from("cotizaciones").select("id, folio, negocio, atendido, fecha").order("fecha", { ascending: false }).limit(5),
+      supabase.from("cotizaciones").select("id, folio, negocio, atendido").order("id", { ascending: false }).limit(5),
     ]);
 
   const cards = [
