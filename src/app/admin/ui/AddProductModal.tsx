@@ -11,10 +11,17 @@ const CATEGORIAS = [
   { value: "Sys", label: "Sys" },
 ];
 
+import { createPortal } from "react-dom";
+
 export function AddProductModal({ onClose }: { onClose: () => void }) {
   const [state, formAction, isPending] = useActionState(createProducto, { idle: true, ok: false });
   const [isClosing, setIsClosing] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (state.ok) {
@@ -27,11 +34,13 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
     setTimeout(onClose, 200); // match animation duration
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className={`absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
         onClick={handleClose}
       />
       
@@ -42,6 +51,7 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#0A2240]">Nuevo Producto</h2>
           <button 
+            type="button"
             onClick={handleClose}
             className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           >
@@ -84,7 +94,7 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">Precio</label>
+              <label className="mb-1 block text-sm font-medium text-slate-600">Precio final</label>
               <input 
                 name="precio_final" 
                 type="number" 
@@ -132,6 +142,7 @@ export function AddProductModal({ onClose }: { onClose: () => void }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

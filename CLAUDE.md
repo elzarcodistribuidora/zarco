@@ -250,7 +250,7 @@ npm run build:pages  # regenerar src/webflow/*.json (aplica rewriteApi)
 
 - ✅ Imágenes WebP (-92%).
 - ✅ Backend en **Supabase** (Postgres + Auth + RLS), Apps Script retirado.
-- ✅ **Panel admin** (CRUD productos/clientes/pedidos/cotizaciones) — reemplaza el Sheet.
+- ✅ **Panel admin** (CRUD completo: visualización, edición y **creación** de productos; gestión de clientes/pedidos/cotizaciones) — reemplaza el Sheet.
 - ✅ Seguridad real por fila (RLS): cada cliente solo ve lo suyo.
 - ✅ Login con Google (popup) + menú de perfil flotante (sin pantalla azul).
 - ✅ Captura de **leads** de prospectos (form de contacto → `/api/quote`).
