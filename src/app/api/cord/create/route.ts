@@ -15,15 +15,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // TODO: Reemplazar con la URL real de la API de Flouvia / Cord
-    const FLOUVIA_API_URL = "https://api.flouvia.com/v1/quotes"; 
+    const FLOUVIA_API_URL = "https://cord.flouvia.com/api/v1/cotizaciones"; 
 
-    // TODO: Ajustar el payload según la documentación de la API de Flouvia
     const payload = {
-      client_name: negocio || "Sin nombre",
-      client_email: email,
-      notes: mensaje,
-      // items: [] 
+      notas: `Cliente: ${negocio || "Sin nombre"}\nEmail: ${email || "Sin email"}\nMensaje: ${mensaje || "Sin mensaje"}`,
+      send: false, 
+      items: [
+        {
+          descripcion: "Solicitud desde formulario web (revisar y ajustar precios)",
+          cantidad: 1,
+          precio_unitario: 0
+        }
+      ]
     };
 
     const response = await fetch(FLOUVIA_API_URL, {
