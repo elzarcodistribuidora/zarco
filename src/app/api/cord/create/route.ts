@@ -47,10 +47,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const data = await response.json();
+    const responseData = await response.json();
     
-    // Asumimos que la API devuelve un 'token' o 'id' para embeber
-    const quoteToken = data.token || data.id;
+    // La API de Flouvia devuelve { data: { id: "..." } }
+    const quoteToken = responseData?.data?.id || responseData?.id || responseData?.token;
 
     // (Opcional) Guardar el token de la cotización en Supabase asociado al lead
     // await supabase.from("cotizaciones").update({ cord_token: quoteToken }).eq("id", leadId);
