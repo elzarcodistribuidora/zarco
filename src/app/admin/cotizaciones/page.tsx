@@ -3,6 +3,7 @@ import { toggleCotizacionAtendida } from "../actions";
 import { RowForm } from "../ui/RowForm";
 import { SaveButton } from "../ui/SaveButton";
 import { CordGenerateButton } from "./CordGenerateButton";
+import Link from "next/link";
 
 export default async function CotizacionesAdmin() {
   const supabase = await createClient();
@@ -17,14 +18,23 @@ export default async function CotizacionesAdmin() {
 
   return (
     <>
-      <div className="admin-enter">
-        <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
-          Cotizaciones / Leads
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          {rows.length} en total · {pendientes} sin atender · vienen del
-          formulario de contacto (prospectos sin cuenta).
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-[#0A2240]">
+              Cotizaciones / Leads
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              {rows.length} en total · {pendientes} sin atender · vienen del
+              formulario de contacto (prospectos sin cuenta).
+            </p>
+          </div>
+          <Link
+            href="/admin/cotizaciones/nueva"
+            className="inline-flex flex-none items-center justify-center rounded-xl bg-[#0A2240] px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#A81200] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#A81200] focus:ring-offset-2"
+          >
+            + Nueva Cotización
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 space-y-3">

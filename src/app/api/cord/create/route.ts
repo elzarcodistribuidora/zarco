@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const body = await req.json();
-    const { leadId, negocio, email, mensaje } = body;
+    const { leadId, negocio, email, mensaje, items: bodyItems } = body;
 
     const CORD_SECRET_KEY = process.env.CORD_SECRET_KEY;
     if (!CORD_SECRET_KEY) {
@@ -17,16 +17,21 @@ export async function POST(req: Request) {
 
     const FLOUVIA_API_URL = "https://cord.flouvia.com/api/v1/cotizaciones"; 
 
+    // Usar los ítems enviados, o un ítem por defecto si no hay ninguno
+    const finalItems = Array.isArray(bodyItems) && bodyItems.length > 0
+      ? bodyItems
+      : [
+          {
+            descripcion: "Solicitud desde formulario web (revisar y ajustar precios)",
+            cantidad: 1,
+            precio_unitario: 0
+          }
+        ];
+
     const payload = {
       notas: `Cliente: ${negocio || "Sin nombre"}\nEmail: ${email || "Sin email"}\nMensaje: ${mensaje || "Sin mensaje"}`,
       send: false, 
-      items: [
-        {
-          descripcion: "Solicitud desde formulario web (revisar y ajustar precios)",
-          cantidad: 1,
-          precio_unitario: 0
-        }
-      ]
+      items: finalItems
     };
 
     const response = await fetch(FLOUVIA_API_URL, {
