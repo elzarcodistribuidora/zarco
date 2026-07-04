@@ -60,8 +60,14 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
           onQuoteCreated={handleQuoteCreated}
         >
           {/* Composable UI Pattern */}
-          <CordBuilder.Header className="bg-slate-50 p-6 rounded-xl border border-slate-200" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <CordBuilder.Header className="bg-slate-50 p-6 rounded-xl border border-slate-200 m-0" />
+            <CordBuilder.Config className="bg-slate-50 p-6 rounded-xl border border-slate-200 m-0" />
+          </div>
+          
           <CordBuilder.Items />
+          
+          <CordBuilder.Notes />
           
           <div className="flex justify-between items-end border-t border-slate-100 pt-6">
             <div className="text-sm text-slate-500 max-w-xs">
