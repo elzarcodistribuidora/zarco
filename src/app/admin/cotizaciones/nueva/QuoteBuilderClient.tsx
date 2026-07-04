@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+// @ts-ignore - The types in @flouviahq/elements/react are not yet updated to export CordProvider
 import { CordProvider, CordBuilder } from "@flouviahq/elements/react";
+// @ts-ignore
 import type { CreateQuoteResponse } from "@flouviahq/elements/react";
 
 export function QuoteBuilderClient({ productos }: { productos: any[] }) {
