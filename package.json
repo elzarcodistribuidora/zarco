@@ -17,7 +17,7 @@
     "@cord-sdk/react": "^1.47.2",
     "@cord-sdk/server": "^1.47.2",
     "@cord-sdk/types": "^1.47.2",
-    "@flouviahq/elements": "^0.2.0",
+    "@flouviahq/elements": "^0.4.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.107.0",
     "googleapis": "^173.0.0",
