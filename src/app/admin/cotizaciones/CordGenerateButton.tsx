@@ -20,26 +20,30 @@ export function CordGenerateButton({
   async function handleGenerate() {
     setLoading(true);
     try {
+      console.log("Enviando petición a /api/cord/create...");
       const res = await fetch("/api/cord/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leadId, negocio, email, mensaje }),
       });
 
+      const data = await res.json().catch(() => ({}));
+      console.log("Respuesta del servidor:", res.status, data);
+
       if (!res.ok) {
-        throw new Error("Error al generar cotización. Verifica la configuración de la API.");
+        alert(`Fallo en el servidor (${res.status}): ${data.error || "Desconocido"} \n\n${JSON.stringify(data.details || data)}`);
+        return;
       }
 
-      const data = await res.json();
       if (data.token) {
-        // Redirigir a la vista de la cotización
+        console.log("Redirigiendo a:", `/admin/cotizaciones/cord/${data.token}`);
         router.push(`/admin/cotizaciones/cord/${data.token}`);
       } else {
-        alert("La API no devolvió un token válido.");
+        alert(`La API respondió OK pero no devolvió un token. Respuesta: ${JSON.stringify(data)}`);
       }
     } catch (err: any) {
-      alert(err.message);
-      console.error(err);
+      alert(`Error de red o JS: ${err.message}`);
+      console.error("Error en handleGenerate:", err);
     } finally {
       setLoading(false);
     }
