@@ -49,8 +49,13 @@ export async function POST(req: Request) {
 
     const responseData = await response.json();
     
-    // La API de Flouvia devuelve { data: { id: "..." } }
-    const quoteToken = responseData?.data?.id || responseData?.id || responseData?.token;
+    // La API de Flouvia devuelve { data: { id: "...", link_publico: "/q/abc1234" } }
+    let quoteToken = responseData?.data?.id || responseData?.id || responseData?.token;
+    const linkPublico = responseData?.data?.link_publico;
+    
+    if (linkPublico && linkPublico.includes("/q/")) {
+      quoteToken = linkPublico.split("/q/")[1];
+    }
 
     // (Opcional) Guardar el token de la cotización en Supabase asociado al lead
     // await supabase.from("cotizaciones").update({ cord_token: quoteToken }).eq("id", leadId);
