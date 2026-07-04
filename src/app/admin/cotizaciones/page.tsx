@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { toggleCotizacionAtendida } from "../actions";
 import { RowForm } from "../ui/RowForm";
 import { SaveButton } from "../ui/SaveButton";
+import { CordGenerateButton } from "./CordGenerateButton";
 
 export default async function CotizacionesAdmin() {
   const supabase = await createClient();
@@ -76,6 +77,12 @@ export default async function CotizacionesAdmin() {
                     minute: "2-digit",
                   })}
                 </span>
+                <CordGenerateButton 
+                  leadId={c.id} 
+                  negocio={c.negocio} 
+                  email={c.email} 
+                  mensaje={c.mensaje} 
+                />
                 <RowForm
                   action={toggleCotizacionAtendida}
                   savedMessage={
