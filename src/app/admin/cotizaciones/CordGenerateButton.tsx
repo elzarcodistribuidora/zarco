@@ -9,7 +9,7 @@ export function CordGenerateButton({
   email, 
   mensaje 
 }: { 
-  leadId: string, 
+  leadId: string | number, 
   negocio?: string, 
   email?: string, 
   mensaje?: string 
