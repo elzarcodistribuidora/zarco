@@ -10,9 +10,9 @@ export function CordGenerateButton({
   mensaje 
 }: { 
   leadId: string | number, 
-  negocio?: string, 
-  email?: string, 
-  mensaje?: string 
+  negocio?: string | null, 
+  email?: string | null, 
+  mensaje?: string | null 
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
