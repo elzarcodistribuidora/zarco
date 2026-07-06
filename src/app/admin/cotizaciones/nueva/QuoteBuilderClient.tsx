@@ -7,6 +7,7 @@ import Link from "next/link";
 import { CordProvider, CordBuilder } from "@flouviahq/elements/react";
 // @ts-ignore
 import type { CreateQuoteResponse } from "@flouviahq/elements/react";
+import { AdvancedQuoteItems } from "./AdvancedQuoteItems";
 
 export function QuoteBuilderClient({ productos, clientes }: { productos: any[], clientes: any[] }) {
   const router = useRouter();
@@ -110,14 +111,8 @@ export function QuoteBuilderClient({ productos, clientes }: { productos: any[], 
                   </div>
 
                   {/* Middle Section: Items Table */}
-                  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden transition-all hover:shadow-md">
-                    <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
-                      <h3 className="font-bold text-lg text-[#0A2240]">Partidas de la Cotización</h3>
-                      <p className="text-xs text-slate-500 mt-1">Agrega productos desde tu catálogo de El Zarco</p>
-                    </div>
-                    <div className="p-6">
-                      <CordBuilder.Items />
-                    </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden transition-all hover:shadow-md p-6">
+                    <AdvancedQuoteItems />
                   </div>
 
                   {/* Notes Section */}
