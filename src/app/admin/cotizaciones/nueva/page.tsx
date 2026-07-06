@@ -11,5 +11,12 @@ export default async function NuevaCotizacionPage() {
     .order("nombre_web", { ascending: true })
     .limit(1000);
 
-  return <QuoteBuilderClient productos={productos || []} />;
+  // Fetch clients for the QuoteBuilder autocomplete
+  const { data: clientes } = await supabase
+    .from("clientes")
+    .select("id, empresa, email")
+    .order("empresa", { ascending: true })
+    .limit(500);
+
+  return <QuoteBuilderClient productos={productos || []} clientes={clientes || []} />;
 }

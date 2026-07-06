@@ -7,7 +7,7 @@ import { CordProvider, CordBuilder } from "@flouviahq/elements/react";
 // @ts-ignore
 import type { CreateQuoteResponse } from "@flouviahq/elements/react";
 
-export function QuoteBuilderClient({ productos }: { productos: any[] }) {
+export function QuoteBuilderClient({ productos, clientes }: { productos: any[], clientes: any[] }) {
   const router = useRouter();
 
   const handleQuoteCreated = (data: CreateQuoteResponse) => {
@@ -76,6 +76,7 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
           >
             <CordBuilder
               catalog={productos}
+              clients={clientes}
               onQuoteCreated={handleQuoteCreated}
             >
               {/* Top Section: Client & Config */}
