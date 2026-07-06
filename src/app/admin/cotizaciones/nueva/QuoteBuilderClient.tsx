@@ -38,7 +38,7 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
             </h1>
           </div>
           <p className="text-sm text-slate-500 max-w-xl">
-            Construye una propuesta comercial estructurada usando Cord Elements. 
+            Construye una propuesta comercial estructurada usando Cord Elements.
             El cliente podrá aprobarla y pagarla directamente desde el enlace seguro.
           </p>
         </div>
@@ -56,22 +56,25 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
       {/* Main Builder Card - Super Premium Glassmorphism / Shadow */}
       <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-2xl shadow-slate-200/50 ring-1 ring-slate-900/5">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#A81200] via-red-600 to-orange-500" />
-        
+
         <div className="p-8 sm:p-10">
-          <CordProvider 
-            proxyUrl="/api/cord/create" 
+          <CordProvider
+            proxyUrl="/api/cord/create"
             publishableKey="pk_test_12345"
             appearance={{
               variables: {
                 colorPrimary: '#A81200',
                 colorText: '#0A2240',
                 borderRadius: '12px',
-                fontFamily: 'Inter, system-ui, sans-serif'
-              }
+                fontFamily: 'Outfit, system-ui, sans-serif'
+              },
+              fonts: [
+                { cssSrc: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap' }
+              ]
             }}
             onAnalyticsEvent={handleAnalytics}
           >
-            <CordBuilder 
+            <CordBuilder
               catalog={productos}
               onQuoteCreated={handleQuoteCreated}
             >
@@ -98,7 +101,7 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
                   <CordBuilder.Config className="m-0" />
                 </div>
               </div>
-              
+
               {/* Middle Section: Items Table */}
               <div className="mb-10 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
@@ -109,7 +112,7 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
                   <CordBuilder.Items />
                 </div>
               </div>
-              
+
               {/* Bottom Section: Notes & Summary */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
                 <div>
@@ -120,7 +123,7 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
                   <CordBuilder.Summary />
                 </div>
               </div>
-              
+
               {/* Footer Checkout Action */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-6 rounded-2xl bg-[#0A2240] p-8 text-white shadow-xl shadow-[#0A2240]/20">
                 <div className="flex items-center gap-4">
@@ -134,7 +137,7 @@ export function QuoteBuilderClient({ productos }: { productos: any[] }) {
                     <p className="text-sm text-slate-300">Enlace criptográfico listo para pago con transferencia o tarjeta.</p>
                   </div>
                 </div>
-                
+
                 <div className="w-full sm:w-auto">
                   <CordBuilder.SubmitButton className="w-full sm:w-auto bg-[#A81200] hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg hover:shadow-red-900/50 hover:-translate-y-1 transform flex items-center justify-center gap-2 text-lg">
                     Generar Cotización
