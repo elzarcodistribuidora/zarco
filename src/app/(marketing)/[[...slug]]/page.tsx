@@ -72,7 +72,7 @@ export async function generateStaticParams() {
   const index = await loadIndex();
   // `/perfil` lo sirve su propia ruta React (perfil/page.tsx), no el catch-all.
   return index
-    .filter((slug) => slug !== "perfil")
+    .filter((slug) => slug !== "perfil" && slug !== "delicatessen")
     .map((slug) => ({
       slug: slug === "index" ? [] : [slug],
     }));

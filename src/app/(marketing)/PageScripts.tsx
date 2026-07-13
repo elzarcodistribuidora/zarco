@@ -235,7 +235,17 @@ export default function PageScripts({ js }: { js: string[] }) {
 
       for (const code of js) {
         const el = document.createElement("script");
-        el.textContent = code;
+        const trimmed = code.trimStart();
+        if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+          // JSON-LD structured data — must NOT be executed as JavaScript.
+          el.type = "application/ld+json";
+          el.textContent = code;
+        } else {
+          // Wrap in IIFE to isolate scope — prevents duplicate `let`/`const`
+          // declarations (e.g. `currentUserGlobal`) from colliding across
+          // scripts when the effect re-runs on client-side navigation.
+          el.textContent = `(function(){${code}\n})();`;
+        }
         el.dataset.wfPage = "1";
         document.body.appendChild(el);
         injected.push(el);
