@@ -53,6 +53,8 @@ export default function DelicatessenNavbar() {
         /* Sobrescribir colores para la sección Delicatessen */
         #deli-navbar .nav-top { background-color: #343a40 !important; }
         #deli-navbar .nav-bottom { background-color: #A81200 !important; }
+        #deli-navbar .dropdown-menu { background-color: #343a40 !important; }
+        #deli-mobile-drawer .mobile-dropdown-menu { background-color: #343a40 !important; }
         
         /* Bypass the broken global .desktop-only class from delicatessen.css */
         @media (max-width: 1024px) {
@@ -131,7 +133,7 @@ export default function DelicatessenNavbar() {
 
       {/* ── MOBILE DRAWER ── */}
       <div className={`drawer-overlay ${drawerOpen ? "active" : ""}`} onClick={closeDrawer}></div>
-      <div className={`mobile-drawer ${drawerOpen ? "active" : ""}`}>
+      <div className={`mobile-drawer ${drawerOpen ? "active" : ""}`} id="deli-mobile-drawer">
         <div className="drawer-header">
           <img src="/assets/69ac8c1474da9485bf036f71_DISTRIBUIDORA.webp" alt="Logo El Zarco" />
         </div>
