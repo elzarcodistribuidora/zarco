@@ -8,6 +8,14 @@ export default function DelicatessenNavbar() {
   const [hidden, setHidden] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobileProdOpen, setMobileProdOpen] = useState(false);
+  const [user, setUser] = useState<{ picture?: string; name?: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const u = localStorage.getItem("zarcoUser");
+      if (u) setUser(JSON.parse(u));
+    } catch (e) {}
+  }, []);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -333,28 +341,15 @@ export default function DelicatessenNavbar() {
             <div className="deli-desktop-flex" style={{ justifySelf: "end", display: "flex", alignItems: "center", gap: "15px", position: "relative" }}>
               <div className="user-menu-wrapper" style={{ position: "relative" }}>
                 <button className="deli-user-btn auth-trigger" id="desktopUserBtn" title="Mi Cuenta" style={{ position: "relative" }}>
-                  <svg className="default-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                  </svg>
-                  <img src="" alt="Perfil" className="nav-avatar-img" />
-                  <span className="online-dot"></span>
+                  {!user?.picture ? (
+                    <svg className="default-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  ) : (
+                    <img src={user.picture} alt="Perfil" className="nav-avatar-img" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} referrerPolicy="no-referrer" />
+                  )}
+                  {user && <span className="online-dot" style={{ position: 'absolute', bottom: -2, right: -2, width: 12, height: 12, background: '#4CAF50', border: '2px solid #343a40', borderRadius: '50%' }}></span>}
                 </button>
-                <div className="user-popover" id="desktopUserDropdown">
-                  <div className="popover-header">
-                    <span className="popover-name">Usuario</span>
-                    <span className="popover-email">correo@gmail.com</span>
-                  </div>
-                  <div className="popover-body">
-                    <Link href="/perfil" className="popover-link">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                      Mi Perfil B2B
-                    </Link>
-                    <button className="popover-link logout" id="desktopLogoutBtn">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                </div>
               </div>
               <Link href="/contacto" className="deli-cta">COTIZAR</Link>
             </div>

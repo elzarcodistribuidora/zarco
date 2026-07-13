@@ -256,3 +256,5 @@ npm run build:pages  # regenerar src/webflow/*.json (aplica rewriteApi)
 - ✅ Captura de **leads** de prospectos (form de contacto → `/api/quote`).
 - ✅ Catálogo cacheado (ISR) + revalidación on-demand al editar precios.
 - ✅ SEO por página + sitemap + robots.
+- ✅ **Rediseño Premium en Delicatessen**: Animación nativa en navbar, sección de charolas compacta y de lujo con **ilustraciones SVG a todo color**.
+- ✅ **Banners WebP y Multi-Slider**: Conversión de todos los nuevos banners (escritorio y móvil) a formato WebP, inyección del motor de carrusel (slider) en Delicatessen, y sincronización cruzada de banners promocionales con la página de inicio.
