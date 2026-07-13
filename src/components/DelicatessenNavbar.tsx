@@ -53,12 +53,22 @@ export default function DelicatessenNavbar() {
         /* Sobrescribir colores para la sección Delicatessen */
         #deli-navbar .nav-top { background-color: #343a40 !important; }
         #deli-navbar .nav-bottom { background-color: #A81200 !important; }
+        
+        /* Bypass the broken global .desktop-only class from delicatessen.css */
+        @media (max-width: 1024px) {
+          #deli-navbar .deli-desktop-only { display: none !important; }
+          #deli-navbar .deli-mobile-only { display: flex !important; }
+          #deli-navbar .nav-logo-mobile.deli-mobile-only { display: block !important; }
+        }
+        @media (min-width: 1025px) {
+          #deli-navbar .deli-mobile-only { display: none !important; }
+        }
       `}} />
 
       <nav className={`navbar ${scrolled ? "scrolled" : ""} ${hidden ? "nav-hidden" : ""}`} id="deli-navbar">
         <div className="nav-top">
           <div className="nav-container top-container">
-            <div className="nav-left desktop-only">
+            <div className="nav-left deli-desktop-only">
               <Link href="/" className="nav-logo">
                 <img src="/assets/69ac8c1474da9485bf036f71_DISTRIBUIDORA.webp" alt="Logo El Zarco" />
               </Link>
@@ -66,7 +76,7 @@ export default function DelicatessenNavbar() {
             <div className="nav-center">
               <img src="/assets/69a9afaad2c75d4f8e8e79ec_GIF-EL-ZARCO-1.webp" alt="Promo El Zarco" className="nav-gif" />
             </div>
-            <div className="nav-right desktop-only">
+            <div className="nav-right deli-desktop-only">
               <div className="user-menu-wrapper">
                 <button className="user-trigger auth-trigger" id="desktopUserBtn" title="Mi Cuenta">
                   {!user?.picture ? (
@@ -89,11 +99,11 @@ export default function DelicatessenNavbar() {
         </div>
         <div className="nav-bottom">
           <div className="nav-container bottom-container">
-            <Link href="/" className="nav-logo-mobile mobile-only">
+            <Link href="/" className="nav-logo-mobile deli-mobile-only">
               <img src="/assets/69ac8c1474da9485bf036f71_DISTRIBUIDORA.webp" alt="Logo El Zarco Móvil" />
             </Link>
             
-            <ul className="nav-menu desktop-only">
+            <ul className="nav-menu deli-desktop-only">
               <li><Link href="/" className="nav-link">INICIO</Link></li>
               <li className="has-dropdown">
                 <span className="nav-link" style={{cursor: "pointer"}}>PRODUCTOS <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
@@ -110,7 +120,7 @@ export default function DelicatessenNavbar() {
               <li><Link href="/contacto" className="nav-link">CONTÁCTANOS</Link></li>
             </ul>
             
-            <button className={`hamburger mobile-only ${drawerOpen ? "active" : ""}`} aria-label="Abrir menú" onClick={toggleDrawer}>
+            <button className={`hamburger deli-mobile-only ${drawerOpen ? "active" : ""}`} aria-label="Abrir menú" onClick={toggleDrawer}>
               <span className="bar"></span>
               <span className="bar"></span>
               <span className="bar"></span>
