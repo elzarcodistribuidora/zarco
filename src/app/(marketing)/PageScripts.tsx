@@ -13,7 +13,7 @@ import { useEffect } from "react";
  */
 export default function PageScripts({ js }: { js: string[] }) {
   useEffect(() => {
-    let cancelled = false;
+    console.log("PageScripts effect ran"); let cancelled = false;
     const injected: HTMLScriptElement[] = [];
 
     const isLoggedIn = () => !!localStorage.getItem("zarcoUser");
@@ -233,6 +233,7 @@ export default function PageScripts({ js }: { js: string[] }) {
       }
       if (cancelled) return;
 
+      const initEvent = "zarco-init-" + Date.now() + "-" + Math.random().toString(36).substring(2);
       for (const code of js) {
         const el = document.createElement("script");
         const trimmed = code.trimStart();
@@ -241,16 +242,16 @@ export default function PageScripts({ js }: { js: string[] }) {
           el.type = "application/ld+json";
           el.textContent = code;
         } else {
-          // Wrap in IIFE to isolate scope — prevents duplicate `let`/`const`
-          // declarations (e.g. `currentUserGlobal`) from colliding across
-          // scripts when the effect re-runs on client-side navigation.
-          el.textContent = `(function(){${code}\n})();`;
+          // Replace DOMContentLoaded with our unique event so old listeners don't re-trigger
+          let safeCode = code.replace(/['"\`]DOMContentLoaded['"\`]/g, `"${initEvent}"`);
+          // Wrap in IIFE to isolate scope
+          el.textContent = `(function(){${safeCode}\n})();`;
         }
         el.dataset.wfPage = "1";
         document.body.appendChild(el);
         injected.push(el);
       }
-      document.dispatchEvent(new Event("DOMContentLoaded"));
+      document.dispatchEvent(new Event(initEvent));
     }
     run();
 

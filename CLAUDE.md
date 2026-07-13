@@ -258,3 +258,5 @@ npm run build:pages  # regenerar src/webflow/*.json (aplica rewriteApi)
 - ✅ SEO por página + sitemap + robots.
 - ✅ **Rediseño Premium en Delicatessen**: Animación nativa en navbar, sección de charolas compacta y de lujo con **ilustraciones SVG a todo color**.
 - ✅ **Banners WebP y Multi-Slider**: Conversión de todos los nuevos banners (escritorio y móvil) a formato WebP, inyección del motor de carrusel (slider) en Delicatessen, y sincronización cruzada de banners promocionales con la página de inicio.
+- ✅ **Banner promocional en Home**: Inyección de banner adaptativo (escritorio/móvil) en la página principal, vinculado dinámicamente a la sección de charolas en Delicatessen, posicionado estratégicamente entre familias y líderes.
+- ✅ **Fix de Navbars (Móvil y Transiciones)**: Se reestructuró `DelicatessenNavbar` para que sea idéntica en estructura y funcionalidad a la navbar normal en móvil (incluyendo el módulo de autenticación). Se solucionó un bug severo en `PageScripts.tsx` que acumulaba listeners de `DOMContentLoaded` en cada transición de ruta en Next.js, lo que impedía que el menú hamburguesa funcionara al cambiar de página.
