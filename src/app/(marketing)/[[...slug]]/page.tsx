@@ -96,7 +96,10 @@ export default async function WebflowPage({
       <style dangerouslySetInnerHTML={{ __html: page.css }} />
       <div
         className={page.bodyClass || undefined}
-        dangerouslySetInnerHTML={{ __html: page.body }}
+        dangerouslySetInnerHTML={{ 
+          __html: page.body
+            .replace(/href="[^"]*#(?:servicio-)?charolas"/g, 'href="/delicatessen/arma-tu-charola"')
+        }}
       />
       <PageScripts js={page.js ?? []} />
       {/* Recomendaciones cross-sell / upsell (solo catálogo). */}

@@ -53,8 +53,11 @@ export default function DelicatessenNavbar() {
         /* Sobrescribir colores para la sección Delicatessen */
         #deli-navbar .nav-top { background-color: #343a40 !important; }
         #deli-navbar .nav-bottom { background-color: #A81200 !important; }
-        #deli-navbar .dropdown-menu { background-color: #343a40 !important; }
-        #deli-mobile-drawer .mobile-dropdown-menu { background-color: #343a40 !important; }
+        #deli-navbar .dropdown-menu { background-color: rgba(52, 58, 64, 0.95) !important; }
+        
+        /* Mobile Drawer en Gris */
+        #deli-mobile-drawer { background-color: rgba(52, 58, 64, 0.98) !important; }
+        #deli-mobile-drawer .mobile-dropdown-menu { background-color: rgba(33, 37, 41, 0.95) !important; border-radius: 8px; margin: 0 15px; }
         
         /* Bypass the broken global .desktop-only class from delicatessen.css */
         @media (max-width: 1024px) {
@@ -174,7 +177,7 @@ export default function DelicatessenNavbar() {
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </div>
-            <ul className={`mobile-dropdown-menu ${mobileProdOpen ? "open" : ""}`}>
+            <ul className={`mobile-dropdown-menu ${mobileProdOpen ? "open" : ""}`} style={{ maxHeight: mobileProdOpen ? "500px" : "0px" }}>
               <li><Link href="/cremeria" className="mobile-dropdown-link" onClick={closeDrawer}>Cremería</Link></li>
               <li><Link href="/embutidos" className="mobile-dropdown-link" onClick={closeDrawer}>Embutidos</Link></li>
               <li><Link href="/abarrotes-basicos" className="mobile-dropdown-link" onClick={closeDrawer}>Abarrotes Básicos</Link></li>

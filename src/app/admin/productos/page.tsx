@@ -8,6 +8,7 @@ import { IconSearch } from "../ui/icons";
 
 import { AddProductButton } from "../ui/AddProductButton";
 import { ExportButton } from "../ui/ExportButton";
+import { UploadPricesCSV } from "../ui/UploadPricesCSV";
 
 const PAGE = 100; // cuántos productos por "tanda" (botón Cargar más)
 
@@ -68,6 +69,7 @@ export default async function ProductosAdmin({
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <UploadPricesCSV />
           <ExportButton type="productos" />
           <AddProductButton />
         </div>

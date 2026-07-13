@@ -60,14 +60,28 @@ export default async function DelicatessenPage() {
     <>
       <DelicatessenNavbar />
       <style dangerouslySetInnerHTML={{ __html: page.css }} />
-      
+      {/* React CTA Banner inserted above Webflow content */}
+      <div className="bg-[#A81200] text-white py-4 px-4 text-center sticky top-[70px] z-[1900] shadow-md">
+        <p className="font-bold text-sm md:text-base flex items-center justify-center gap-2">
+          <span>✨ NUEVO: Experimenta nuestro Constructor Interactivo de Charolas ✨</span>
+          <a href="/delicatessen/arma-tu-charola" className="bg-white text-[#A81200] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wide hover:bg-slate-100 transition-colors ml-2">
+            Pruébalo ahora
+          </a>
+        </p>
+      </div>
+
       {/* 
         This is where we inject the webflow body content. 
         It has been stripped of the hardcoded nav and footer in delicatessen.json.
+        We also redirect old charolas anchor links to the new builder.
       */}
       <div
         className={page.bodyClass || undefined}
-        dangerouslySetInnerHTML={{ __html: page.body }}
+        dangerouslySetInnerHTML={{ 
+          __html: page.body
+            .replace(/href="[^"]*#servicio-charolas"/g, 'href="/delicatessen/arma-tu-charola"')
+            .replace(/href="[^"]*#charolas"/g, 'href="/delicatessen/arma-tu-charola"') 
+        }}
       />
       
       <PageScripts js={page.js ?? []} />
