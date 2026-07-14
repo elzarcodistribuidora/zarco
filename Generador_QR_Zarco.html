@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Motor QR | El Zarco Distribuidores</title>
+    <!-- Librería de renderizado vectorial de código abierto -->
+    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <style>
+        body { 
+            background: #0f172a; 
+            color: white; 
+            font-family: 'Arial', sans-serif; 
+            text-align: center; 
+            padding: 40px; 
+        }
+        h1 { color: #b91c1c; text-transform: uppercase; font-weight: 900; }
+        p { color: #94a3b8; margin-bottom: 30px; }
+        .panel { 
+            background: #1e293b; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        input[type="file"] { 
+            margin-bottom: 20px; 
+            background: #334155; 
+            padding: 10px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        #qr-box { 
+            margin: 20px auto; 
+            display: inline-block; 
+            background: #; /* Fondo negro absoluto */
+            padding: 15px; 
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        }
+        button { 
+            background: #b91c1c; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            text-transform: uppercase; 
+        }
+        button:hover { background: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <h1>Renderizador QR - El Zarco</h1>
+        <p>Generador local de alta seguridad (Nivel H). Diseño: Fondo negro, nodos en rojo sangre.</p>
+        
+        <label style="display: block; font-weight: bold; margin-bottom: 10px;">1. Sube el logo del Zarco:</label>
+        <input type="file" id="logo-input" accept="image/png, image/jpeg">
+        
+        <div id="qr-box"></div>
+        
+        <button id="download-btn">2. Descargar QR para Imprenta</button>
+    </div>
+
+    <script>
+        // Configuración matemática y visual del QR (Filosofía Flouvia)
+        const qrCode = new QRCodeStyling({
+            width: 1000,  // Alta resolución
+            height: 1000, // Alta resolución
+            data: "https://elzarcodistribuidora.com.mx",
+            image: "", // Inicia vacío hasta que subas tu PNG
+            dotsOptions: {
+                color: "#991b1b", // Rojo sangre oscuro
+                type: "rounded"   // Puntos tipo cápsula
+            },
+            backgroundOptions: {
+                color: "#fff", // Fondo negro
+            },
+            cornersSquareOptions: {
+                color: "#991b1b", // Bordes en rojo
+                type: "extra-rounded" // Bordes curvos y elegantes
+            },
+            imageOptions: {
+                crossOrigin: "anonymous",
+                margin: 25 // Crea el parche blanco cuadrado para que tu logo resalte
+            }
+        });
+
+        // Dibuja el QR vacío al iniciar
+        qrCode.append(document.getElementById("qr-box"));
+
+        // Función para inyectar la imagen que subas
+        document.getElementById('logo-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                qrCode.update({
+                    image: event.target.result
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Función para descargar el archivo en tu compu
+        document.getElementById('download-btn').addEventListener('click', () => {
+            qrCode.download({ name: "QR_ElZarco_AltaResolucion", extension: "png" });
+        });
+    </script>
+
+</body>
+</html>

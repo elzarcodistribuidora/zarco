@@ -59,30 +59,35 @@ export default async function DelicatessenPage() {
   return (
     <>
       <DelicatessenNavbar />
-      <style dangerouslySetInnerHTML={{ __html: page.css }} />
-      {/* React CTA Banner inserted above Webflow content */}
-      <div className="bg-[#A81200] text-white py-4 px-4 text-center sticky top-[70px] z-[1900] shadow-md">
-        <p className="font-bold text-sm md:text-base flex items-center justify-center gap-2">
-          <span>✨ NUEVO: Experimenta nuestro Constructor Interactivo de Charolas ✨</span>
-          <a href="/delicatessen/arma-tu-charola" className="bg-white text-[#A81200] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wide hover:bg-slate-100 transition-colors ml-2">
-            Pruébalo ahora
-          </a>
-        </p>
+      <style dangerouslySetInnerHTML={{ __html: page.css + `
+        /* Adjust wrapper to account for navbar height exactly */
+        .deli-content-wrapper { padding-top: 134px; }
+        
+        /* Remove webflow padding and first margin so there is no gap */
+        .sector-page-wrapper { padding-top: 0 !important; }
+        main .carousel-section:first-of-type { margin-top: 0 !important; }
+        
+        @media (min-width: 1024px) {
+          .deli-content-wrapper { padding-top: 185px; }
+        }
+      `}} />
+      
+      {/* Wrapper to push content perfectly below the fixed navbar */}
+      <div className="deli-content-wrapper">
+        {/* 
+          This is where we inject the webflow body content. 
+          It has been stripped of the hardcoded nav and footer in delicatessen.json.
+          We also redirect old charolas anchor links to the new builder.
+        */}
+        <div
+          className={page.bodyClass || undefined}
+          dangerouslySetInnerHTML={{ 
+            __html: page.body
+              .replace(/href="[^"]*#servicio-charolas"/g, 'href="/delicatessen/arma-tu-charola"')
+              .replace(/href="[^"]*#charolas"/g, 'href="/delicatessen/arma-tu-charola"') 
+          }}
+        />
       </div>
-
-      {/* 
-        This is where we inject the webflow body content. 
-        It has been stripped of the hardcoded nav and footer in delicatessen.json.
-        We also redirect old charolas anchor links to the new builder.
-      */}
-      <div
-        className={page.bodyClass || undefined}
-        dangerouslySetInnerHTML={{ 
-          __html: page.body
-            .replace(/href="[^"]*#servicio-charolas"/g, 'href="/delicatessen/arma-tu-charola"')
-            .replace(/href="[^"]*#charolas"/g, 'href="/delicatessen/arma-tu-charola"') 
-        }}
-      />
       
       <PageScripts js={page.js ?? []} />
       <DelicatessenFooter />

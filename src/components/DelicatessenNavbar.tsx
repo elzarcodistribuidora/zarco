@@ -136,7 +136,7 @@ export default function DelicatessenNavbar() {
 
       {/* ── MOBILE DRAWER ── */}
       <div className={`drawer-overlay ${drawerOpen ? "active" : ""}`} onClick={closeDrawer}></div>
-      <div className={`mobile-drawer ${drawerOpen ? "active" : ""}`} id="deli-mobile-drawer">
+      <div className={`mobile-drawer ${drawerOpen ? "active" : ""}`} id="deli-mobile-drawer" data-lenis-prevent="true">
         <div className="drawer-header">
           <img src="/assets/69ac8c1474da9485bf036f71_DISTRIBUIDORA.webp" alt="Logo El Zarco" />
         </div>
