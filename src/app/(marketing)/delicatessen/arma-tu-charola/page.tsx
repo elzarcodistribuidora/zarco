@@ -67,6 +67,28 @@ export default async function ArmaTuCharolaPage() {
           display: block;
         }
       `}} />
+      {/* Banner desktop-only */}
+      <section style={{
+        width: '100%',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: '140px 5% 0',
+      }}>
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/banners/charolas-movil.png" />
+          <img
+            src="/banners/charolas-desk.png"
+            alt="Arma tu Charola - El Zarco Delicatessen"
+            style={{
+              width: '100%',
+              height: 'auto',
+              display: 'block',
+              borderRadius: '16px',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+            }}
+          />
+        </picture>
+      </section>
       <main id="charola-builder">
         <TrayBuilder />
       </main>
