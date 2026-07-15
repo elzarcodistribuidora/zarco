@@ -27,7 +27,7 @@ const ABOUT_LINKS = [
 function FooterCol({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
     <div className="flex flex-col">
-      <h3 className="relative mb-6 pb-2.5 text-[1.05rem] font-black tracking-[2px] text-white uppercase after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-[35px] after:rounded after:bg-white md:after:left-1/2 md:after:-translate-x-1/2 lg:after:left-0 lg:after:translate-x-0">
+      <h3 className="relative mb-6 pb-2.5 text-[1.05rem] font-black tracking-[2px] text-white uppercase after:absolute after:bottom-0 after:left-1/2 after:h-[3px] after:w-[35px] after:-translate-x-1/2 after:rounded after:bg-white md:after:left-0 md:after:translate-x-0">
         {title}
       </h3>
       <ul className="flex flex-col gap-3.5">
@@ -96,10 +96,10 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 border-b border-white/10 pb-8 md:border-b-0 md:pb-0 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 border-b border-white/10 pb-8 sm:grid-cols-2 md:border-b-0 md:pb-0 lg:grid-cols-3">
             <FooterCol title="Sectores" links={SECTOR_LINKS} />
             <FooterCol title="Categorías" links={CATEGORY_LINKS} />
-            <div className="col-span-2 lg:col-span-1">
+            <div className="sm:col-span-2 lg:col-span-1">
               <FooterCol title="Nosotros" links={ABOUT_LINKS} />
             </div>
           </div>
