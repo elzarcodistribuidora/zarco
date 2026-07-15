@@ -3,6 +3,13 @@
 import { useEffect } from "react";
 import Lenis from "lenis";
 
+declare global {
+  interface Window {
+    /** Instancia activa de Lenis, expuesta para scrolls programáticos (ver TrayBuilder.tsx). */
+    __lenis?: Lenis;
+  }
+}
+
 /**
  * Scroll suave con inercia (Lenis) en todo el sitio público.
  * Respeta "prefers-reduced-motion". El scroll nativo de los carruseles
@@ -33,6 +40,8 @@ export default function SmoothScroll() {
         ),
     });
 
+    window.__lenis = lenis;
+
     let raf = 0;
     const loop = (time: number) => {
       lenis.raf(time);
@@ -43,6 +52,7 @@ export default function SmoothScroll() {
     return () => {
       cancelAnimationFrame(raf);
       lenis.destroy();
+      if (window.__lenis === lenis) window.__lenis = undefined;
     };
   }, []);
 

@@ -72,6 +72,14 @@ También hay tokens de marca en el `@theme inline` de ese archivo:
   — sesión del sitio público. Mismo flujo de popup de Google que ya usaba
   `PageScripts.tsx` (`signInWithOAuth` + `skipBrowserRedirect` + `window.open`),
   pero como hook de React (`useState`) en vez de manipulación directa del DOM.
+  El popover de escritorio (`DesktopAuthTrigger`, jul 2026) tiene header con
+  degradado navy (mismo lenguaje que el header del drawer del carrito de
+  `/catalogo`) + avatar del usuario sobre el fondo oscuro, y cada opción
+  ("Ir a mi Portal B2B", "Panel admin", "Cerrar Sesión") lleva un ícono en
+  badge circular que se resalta a color al hover (rojo sólido en "Cerrar
+  Sesión"). Es un componente compartido — `DelicatessenNavbar.tsx` lo importa
+  igual que `Navbar.tsx`, así que el rediseño aplica en todo el sitio sin
+  duplicar código.
 - **`Reveal.tsx`** — reemplaza el `IntersectionObserver` + clase `.reveal` de
   los scripts inline de Webflow; fade + slide-up la primera vez que el
   elemento entra en pantalla.
@@ -154,6 +162,12 @@ rediseñó por partes, todo dentro de `CatalogApp.tsx`:
 - **Carrito**: header del drawer con degradado navy + resplandor rojo
   decorativo, stepper de cantidad en píldora, botón flotante con badge de
   cantidad y total.
+- **Aviso de precios** ("Nota Importante de Precios", debajo de la tabla):
+  pasó de una tarjeta angosta (`max-w-[700px]`, sin icono en badge) a una
+  más ancha (`max-w-[980px]`) con fondo en degradado ámbar y una barra de
+  acento amarilla a la izquierda en vez de `border-l`. El mismo bloque
+  (mismas clases) vive duplicado como `priceNotice` en
+  `terminos-del-servicio/page.tsx` — si se ajusta uno, replicar en el otro.
 - **Bug real encontrado y corregido**: el botón flotante del carrito
   (`right-5 bottom-5`) quedaba **tapado** por el botón flotante de WhatsApp
   del `Footer.tsx` (misma esquina, `z-[9999]`) — el usuario reportaba que "el
@@ -300,6 +314,94 @@ beneficios estilo editorial, subnav pill) ya es JSX real, reusando
 de charolas interactivo vive en `/delicatessen/arma-tu-charola`
 (`src/components/charolas/`).
 
+### Botones CTA de navbar → pill (jul 2026)
+
+El botón de acción de **ambas** navbars (`Navbar.tsx`: "Cotizar" → `/contacto`;
+`DelicatessenNavbar.tsx`: "Arma tu Charola" → `/delicatessen/arma-tu-charola`)
+dejó de ser un botón rectangular sólido para adoptar la misma forma de pill
+que ya usaba `WhatsappCTA.tsx` (texto en negritas + círculo con flecha a la
+derecha, `group-hover:translate-x-0.5`), solo que en blanco sobre el fondo
+navy/gris de la navbar en vez de blanco sobre el degradado del CTA de cierre.
+Mismo patrón, adaptado de contexto.
+
+### Sección "Charolas & Tablas Premium" — de tarjetas a menú editorial (jul 2026)
+
+La sección de 3 niveles de charola (`TIERS` en `delicatessen/page.tsx`) tenía
+tarjetas con borde/sombra y SVGs decorativos dibujados a mano (path complejos
+de regalo/vino/carpa) que no convencían visualmente. Se rediseñó dos veces:
+primero se probó el mismo patrón de número tenue `01/02/03` que ya usa
+`SectorPage` (ver abajo), pero el usuario pidió explícitamente **un enfoque
+distinto** al que ya existe en el resto del sitio, no repetir el mismo
+recurso. El diseño final es una lista tipo **menú de restaurante**: cada tier
+es una fila completa (no una columna), separadas por líneas finas
+horizontales (`divide-y` + `border-y`, sin tarjeta envolvente — la sección ya
+no está dentro de la caja blanca `rounded-3xl bg-white shadow` que tenía
+antes, vive directo sobre el fondo blanco de `<main>`). Cada fila:
+nombre del tier a la izquierda, descripción al centro, un **pill** con el
+dato de capacidad a la derecha (borde gris; rojo sólido en la fila
+"Charola Premium"), franja roja vertical + ícono de estrella (SVG, no el
+carácter unicode ★ que no renderiza igual en todos los sistemas) en la fila
+popular. Toda la fila es un `<Link>` a `/delicatessen/arma-tu-charola`
+(no solo el botón), con un botón circular de flecha que aparece al hover
+(siempre visible en la fila popular) — mismo lenguaje de interacción que las
+tarjetas de `CatalogRecs`/`ProductCarousel`.
+
+### Ícono de WhatsApp deformado (bug de sitewide, jul 2026)
+
+El glyph de WhatsApp (path de Font Awesome, `viewBox="0 0 448 512"`) se
+renderizaba en 4 lugares del sitio (`Footer.tsx`, `DelicatessenFooter.tsx`,
+`TrayBuilder.tsx`) forzado a un tamaño cuadrado (`22px × 22px` o
+`h-[22px] w-[22px]`), pero el viewBox **no es cuadrado** (proporción
+448:512 ≈ 0.875:1) — el ícono quedaba ovalado/aplastado en vez de circular.
+Se corrigió el ancho a `19px` (`22 × 0.875`) en los 4 lugares para respetar
+la proporción real del glyph. De paso se encontró y borró un botón flotante
+de WhatsApp **duplicado**: `delicatessen/page.tsx` montaba su propia versión
+(`fixed right-5 bottom-5 z-[9999]`, con mensaje prellenado) exactamente en la
+misma posición que la que ya trae `DelicatessenFooter.tsx` — invisible/dead
+código porque quedaban apilados uno sobre otro con el mismo z-index.
+
+### `/delicatessen/arma-tu-charola` — banner y "Arma tu Charola" como Typeform (jul 2026)
+
+- **Banner**: el banner "Arma tu Charola de Charcutería" (mesa con charolas,
+  logo, `/banners/charolas-desk.png`/`charolas-movil.png`) se movió
+  exclusivamente a esta página, pegado al navbar (`<header className="w-full
+  overflow-hidden pt-[var(--navbar-h)]">`, mismo patrón full-bleed que
+  `SectorPage`). Tenía un **bug de scroll horizontal**: el `<section>` usaba
+  estilos inline `width: '100%'` + `paddingLeft/Right: '5%'` sin
+  `box-sizing: border-box` (el sitio no carga el preflight de Tailwind) — el
+  padding se sumaba al 100% del ancho y el elemento terminaba ~10% más ancho
+  que el viewport. Se resolvió adoptando el mismo patrón sin padding lateral
+  que usan los demás banners del sitio. En Home (`/`), ese mismo espacio
+  ahora muestra un banner promocional nuevo (`charolas-promo-desk.webp` /
+  `charolas-promo-movil.webp`, en `public/banners/`) que enlaza aquí mismo —
+  al hacer hover aparece una pill "Arma tu Charola" centrada sobre un overlay
+  oscuro semitransparente.
+- **`TrayBuilder.tsx` — navegación por teclado estilo Typeform**: `Enter`
+  avanza en cualquier paso (antes solo en la intro), `↓`/`PageDown` avanza,
+  `↑`/`PageUp` retrocede, dígitos `1`-`4` seleccionan el tamaño de charola
+  directo. En notas, `Enter` avanza y `Shift+Enter` inserta salto de línea.
+  **Bug real corregido**: si el usuario clickeaba un ingrediente (quedaba
+  enfocado ese `<button>`) y luego presionaba `Enter` para avanzar, el
+  navegador disparaba también un click nativo sobre ese botón enfocado —
+  deseleccionando el ingrediente justo al avanzar de paso. Se previene con
+  `e.preventDefault()` cuando el target del `Enter` es un `BUTTON`.
+- **Scroll al avanzar/retroceder**: `next()`/`prev()` usaban
+  `window.scrollTo(0, 0)`, que llevaba de vuelta hasta el tope absoluto de la
+  página (mostrando el banner de nuevo) en vez de solo el tope del
+  formulario — se sentía como una recarga. El sitio usa **Lenis** para el
+  scroll suave, que mantiene su propio estado de scroll "virtual"; un
+  `window.scrollTo` nativo pelea contra ese estado y el scroll rebota de
+  vuelta a donde estaba. `SmoothScroll.tsx` ahora expone la instancia activa
+  en `window.__lenis`, y `TrayBuilder.tsx` la usa (`lenis.scrollTo(el, {
+  immediate: true })`) para saltar limpio al tope de `#charola-builder`.
+- **Rediseño visual minimalista**: las tarjetas de ingredientes pasaron de
+  checkbox-en-caja a filas con un subrayado que se pinta de azul al
+  seleccionar + una insignia circular con palomita a la derecha (antes era
+  un trazo SVG suelto sin fondo, se veía flotando). El textarea de notas
+  pasó de caja con borde a subrayado simple (clase `.tb-textarea`, foco en
+  azul). Hints de teclado junto a la navegación (`Presiona ↵ o ↓`,
+  `Presiona 1–4`), ocultos en móvil.
+
 ## `/perfil`
 
 Usa el `Navbar`/`Footer` compartidos igual que el resto del sitio. Su
@@ -321,6 +423,47 @@ de negocio quedó intacta: fetch a `/api/portal`, "cargar al carrito"/"repetir
 pedido" (merge con `localStorage.zarcoCartObjects` + sync a `/api/cart`),
 "descargar nota" (ventana imprimible → PDF), búsqueda de folio/producto,
 login popup de Google, logout.
+
+## 3 bugs de móvil corregidos, sitio verificado con Playwright (jul 2026)
+
+El sitio se reportó como "solo se ve la navbar" en móvil. Se investigó con
+Playwright headless (`chromium`, viewport 390×844) en vez de adivinar, y se
+encontraron 3 bugs reales:
+
+- **Drawer del menú móvil siempre abierto** (el bug real detrás del reporte):
+  en `Navbar.tsx` y `DelicatessenNavbar.tsx`, el `<div>` del drawer tenía la
+  clase `right-0` fija en la base del template string, **además** de la
+  condicional `` drawerOpen ? "right-0" : "-right-full" ``. Ambas clases
+  tienen la misma especificidad CSS (un solo selector de clase), así que
+  `right-0` siempre ganaba y el drawer (`fixed`, `h-screen`, `z-[2001]`)
+  quedaba visible y fijo sobre toda la pantalla sin importar el estado de
+  `drawerOpen` — por eso en móvil "solo se veía la navbar" (en realidad era
+  el drawer superpuesto, tapando el resto de la página). Se quitó el
+  `right-0` de la base; ahora solo lo aporta la clase condicional.
+- **GIF promocional del navbar cortado en móvil**: la imagen central de
+  `Navbar.tsx`/`DelicatessenNavbar.tsx` (`GIF-EL-ZARCO-1.webp`, 700×150px)
+  se forzaba a `h-[100px]` en todas las pantallas — a esa altura el ancho
+  real es ~467px, más que el viewport de un teléfono (ej. 390px), y el
+  texto ("TODO PARA TU NEGOCIO") quedaba cortado por el borde de la
+  pantalla. Se hizo responsive: `h-[65px] lg:h-[100px]` sin scroll,
+  `h-[38px] lg:h-[60px]` con scroll, más `max-w-full` en el `<img>` y su
+  contenedor como red de seguridad.
+- **`/contacto` con scroll horizontal en móvil**: los inputs de
+  `ContactForm.tsx` combinan `w-full` + `padding` (`py-3.5 pr-4 pl-11`) +
+  `border` en el mismo elemento. Sin el preflight de Tailwind (ver arriba),
+  `input`/`textarea`/`select` no traían `box-sizing: border-box`, así que el
+  padding y el borde se sumaban al 100% del ancho y el campo terminaba más
+  ancho que su contenedor — el mismo patrón de bug que ya había aparecido en
+  el banner de `arma-tu-charola` (ver abajo), pero esta vez en un elemento
+  que si vale la pena resetear globalmente. Se agregó `box-sizing: border-box`
+  a la regla `input, textarea, select { ... }` que ya existe en
+  `marketing-tailwind.css` — **no** se creó una regla nueva (ver la
+  advertencia sobre Lightning CSS y selectores duplicados, arriba).
+
+Verificado con un script de Playwright ad-hoc (no quedó como skill del
+proyecto) recorriendo las 15 páginas públicas más `/delicatessen/arma-tu-charola`
+y `/portal/login` en viewport móvil: ninguna quedó con `scrollWidth` mayor al
+viewport tras el fix.
 
 ## Páginas migradas (referencia)
 

@@ -185,17 +185,27 @@ export default function HomePage() {
           <section className="mx-auto my-8 w-[90%] max-w-[1200px]">
             <Link
               href="/delicatessen/arma-tu-charola"
-              className="block overflow-hidden rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-transform hover:scale-[1.02]"
+              className="group relative block overflow-hidden rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] transition-transform hover:scale-[1.02]"
             >
               <picture>
-                <source media="(max-width: 768px)" srcSet="/banners/charolas-movil.png" />
+                <source media="(max-width: 768px)" srcSet="/banners/charolas-promo-movil.webp" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/banners/charolas-desk.png"
-                  alt="Descubre nuestras charolas en Delicatessen"
+                  src="/banners/charolas-promo-desk.webp"
+                  alt="Arma tu Charola de Charcutería"
                   className="block h-auto w-full object-cover"
                 />
               </picture>
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/20">
+                <span className="flex translate-y-2 items-center gap-3 rounded-full bg-white py-2 pr-2 pl-6 text-[0.85rem] font-black tracking-[1.5px] text-brand-navy uppercase opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.25)] transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                  Arma tu Charola
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-red text-white">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </span>
+                </span>
+              </div>
             </Link>
           </section>
         </Reveal>

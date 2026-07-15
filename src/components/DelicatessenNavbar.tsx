@@ -83,20 +83,26 @@ export default function DelicatessenNavbar() {
                 />
               </Link>
             </div>
-            <div className="flex justify-center lg:justify-self-center">
+            <div className="flex max-w-full justify-center lg:justify-self-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/assets/69a9afaad2c75d4f8e8e79ec_GIF-EL-ZARCO-1.webp"
                 alt="Promo El Zarco"
-                className={`block rounded-lg object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-all duration-300 ${scrolled ? "h-[50px] lg:h-[60px]" : "h-[100px]"}`}
+                className={`block max-w-full rounded-lg object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-all duration-300 ${scrolled ? "h-[38px] lg:h-[60px]" : "h-[65px] lg:h-[100px]"}`}
               />
             </div>
             <div className="hidden items-center justify-self-end gap-4 lg:flex">
               <DesktopAuthTrigger />
-              <Link href="/delicatessen/arma-tu-charola">
-                <button className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-red px-8 py-3.5 text-[0.85rem] font-black tracking-[2px] text-white uppercase transition-all hover:-translate-y-0.5 hover:bg-[#ba1400] hover:shadow-[0_8px_25px_rgba(168,18,0,0.4)]">
-                  Arma tu Charola
-                </button>
+              <Link
+                href="/delicatessen/arma-tu-charola"
+                className="group inline-flex shrink-0 items-center gap-3 rounded-full bg-white py-1.5 pr-1.5 pl-6 text-[0.85rem] font-black tracking-[1.5px] text-slate-700 uppercase shadow-[0_8px_20px_rgba(0,0,0,0.15)] transition-transform duration-300 hover:-translate-y-0.5"
+              >
+                Arma tu Charola
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-600 transition-all duration-300 group-hover:bg-slate-300 group-hover:translate-x-0.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </span>
               </Link>
             </div>
           </div>
@@ -192,7 +198,7 @@ export default function DelicatessenNavbar() {
       />
       <div
         style={{ backgroundColor: `${BG_TOP}f2` }}
-        className={`fixed top-0 right-0 z-[2001] flex h-screen w-[85%] max-w-[380px] flex-col overflow-y-auto border-l border-white/10 px-8 pt-[70px] pb-10 shadow-[-10px_0_30px_rgba(0,0,0,0.4)] backdrop-blur-2xl transition-[right] duration-300 ease-out lg:hidden ${
+        className={`fixed top-0 z-[2001] flex h-screen w-[85%] max-w-[380px] flex-col overflow-y-auto border-l border-white/10 px-8 pt-[70px] pb-10 shadow-[-10px_0_30px_rgba(0,0,0,0.4)] backdrop-blur-2xl transition-[right] duration-300 ease-out lg:hidden ${
           drawerOpen ? "right-0" : "-right-full"
         }`}
       >

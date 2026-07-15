@@ -68,36 +68,74 @@ export function DesktopAuthTrigger() {
       </button>
 
       {open && user && (
-        <div className="absolute top-[calc(100%+15px)] right-0 z-[2005] w-[280px] rounded-2xl border border-slate-200 bg-white shadow-[0_15px_35px_-5px_rgba(10,34,64,0.15),0_5px_15px_rgba(0,0,0,0.05)]">
-          <div className="border-b border-slate-100 p-5 text-left">
-            <span className="block truncate font-extrabold text-brand-navy">
-              {user.name || user.email || "Mi cuenta"}
-            </span>
-            {user.email && (
-              <span className="block truncate text-[0.8rem] font-medium text-slate-500">
-                {user.email}
+        <div className="absolute top-[calc(100%+15px)] right-0 z-[2005] w-[300px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_45px_-10px_rgba(10,34,64,0.25),0_5px_15px_rgba(0,0,0,0.06)]">
+          <div className="relative flex items-center gap-3 overflow-hidden bg-gradient-to-br from-brand-navy to-brand-navy-light p-5 text-left">
+            <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-brand-red/20 blur-2xl" />
+            <div className="relative h-11 w-11 shrink-0 rounded-full border-2 border-white/30 p-0.5">
+              {user.picture ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.picture}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  className="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center rounded-full bg-brand-red font-black text-white">
+                  {initialOf(user)}
+                </span>
+              )}
+            </div>
+            <div className="relative min-w-0">
+              <span className="block truncate font-extrabold text-white">
+                {user.name || user.email || "Mi cuenta"}
               </span>
-            )}
+              {user.email && (
+                <span className="block truncate text-[0.8rem] font-medium text-white/60">
+                  {user.email}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex flex-col gap-1 p-2.5">
             <Link
               href="/perfil"
-              className="flex items-center gap-3 rounded-[10px] px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 hover:text-brand-navy"
+              className="group flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-brand-navy/5 hover:text-brand-navy"
             >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors group-hover:bg-brand-navy/10 group-hover:text-brand-navy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M3 9.5 12 3l9 6.5" />
+                  <path d="M5 9.5V21h14V9.5" />
+                  <path d="M9 21v-6h6v6" />
+                </svg>
+              </span>
               Ir a mi Portal B2B
             </Link>
             {user.role === "admin" && (
               <Link
                 href="/admin"
-                className="flex items-center gap-3 rounded-[10px] px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 hover:text-brand-navy"
+                className="group flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-brand-navy/5 hover:text-brand-navy"
               >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors group-hover:bg-brand-navy/10 group-hover:text-brand-navy">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                </span>
                 Panel admin
               </Link>
             )}
             <button
               onClick={logout}
-              className="mt-1 flex items-center gap-3 rounded-b-[10px] rounded-t-none border-t border-slate-100 px-4 py-3 text-left text-sm font-semibold text-brand-red hover:bg-red-50"
+              className="group mt-1 flex items-center gap-3 rounded-[10px] border-t border-slate-100 px-3.5 py-3 pt-4 text-left text-sm font-semibold text-brand-red"
             >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50 text-brand-red transition-colors group-hover:bg-brand-red group-hover:text-white">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <path d="M16 17l5-5-5-5" />
+                  <path d="M21 12H9" />
+                </svg>
+              </span>
               Cerrar Sesión
             </button>
           </div>

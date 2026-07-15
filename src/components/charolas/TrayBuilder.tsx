@@ -40,6 +40,23 @@ const slideVariants = {
   exit: (d: number) => ({ opacity: 0, y: d > 0 ? -40 : 40 }),
 };
 
+// Al avanzar/retroceder solo queremos volver al tope del formulario (justo
+// debajo del navbar fijo), NO al tope absoluto de la página — eso arrastraba
+// de vuelta el banner de arriba y se sentía como una recarga. El sitio usa
+// Lenis para el scroll suave, que lleva su propio estado de scroll "virtual";
+// un window.scrollTo nativo pelea contra ese estado y el scroll rebota de
+// vuelta a donde estaba. Hay que usar la API de Lenis (expuesta en
+// window.__lenis por SmoothScroll.tsx) para que quede sincronizado.
+function scrollToBuilderTop() {
+  const el = document.getElementById("charola-builder");
+  if (!el) return;
+  if (window.__lenis) {
+    window.__lenis.scrollTo(el, { immediate: true });
+  } else {
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: "auto" });
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
@@ -52,11 +69,11 @@ export default function TrayBuilder() {
   const totalSteps = 7;
 
   const next = useCallback(() => {
-    if (step < totalSteps - 1) { setDir(1); setStep((s) => s + 1); window.scrollTo(0, 0); }
+    if (step < totalSteps - 1) { setDir(1); setStep((s) => s + 1); scrollToBuilderTop(); }
   }, [step]);
 
   const prev = useCallback(() => {
-    if (step > 0) { setDir(-1); setStep((s) => s - 1); window.scrollTo(0, 0); }
+    if (step > 0) { setDir(-1); setStep((s) => s - 1); scrollToBuilderTop(); }
   }, [step]);
 
   const toggleItem = useCallback((ing: Ingredient) => {
@@ -98,11 +115,49 @@ export default function TrayBuilder() {
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && step === 0) next();
+      const target = e.target as HTMLElement;
+      const isTextarea = target.tagName === "TEXTAREA";
+      const isInput = target.tagName === "INPUT";
+
+      // Paso 1 (tamaño): teclas 1-4 seleccionan y avanzan, como en Typeform.
+      if (step === 1 && /^[1-4]$/.test(e.key)) {
+        const chosen = sizes[Number(e.key) - 1];
+        if (chosen) {
+          setSize(chosen.id);
+          setTimeout(next, 250);
+        }
+        return;
+      }
+
+      if (e.key === "Enter") {
+        if (isTextarea && e.shiftKey) return; // Shift+Enter = salto de línea
+        if (isTextarea) e.preventDefault(); // Enter solo = avanzar, no salto de línea
+        // Si el foco quedó en un <button> (p.ej. justo después de clickear un
+        // ingrediente), el navegador dispara su propio click al presionar
+        // Enter — eso des-seleccionaba el ingrediente justo al avanzar.
+        if (target.tagName === "BUTTON") e.preventDefault();
+
+        if (step === 1) { if (size) next(); return; }
+        if (step === 6) { if (items.length > 0) sendWhatsApp(); return; }
+        next();
+        return;
+      }
+
+      if (!isTextarea && !isInput) {
+        if (e.key === "ArrowDown" || e.key === "PageDown") {
+          e.preventDefault();
+          if (step === 1 && !size) return;
+          next();
+        }
+        if (e.key === "ArrowUp" || e.key === "PageUp") {
+          e.preventDefault();
+          prev();
+        }
+      }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [step, next]);
+  }, [step, size, items, next, prev, sendWhatsApp]);
 
   const progress = step / (totalSteps - 1);
 
@@ -168,9 +223,45 @@ export default function TrayBuilder() {
         }
 
         #charola-builder .tb-h1 { font-size: clamp(2.4rem, 8vw, 4rem); font-weight: 900; color: ${C.blue}; line-height: 1.05; letter-spacing: -2px; margin-bottom: 24px; }
-        #charola-builder .tb-h2 { font-size: clamp(1.8rem, 6vw, 2.6rem); font-weight: 900; color: ${C.blue}; line-height: 1.1; margin-bottom: 12px; }
+        #charola-builder .tb-h2 { font-size: clamp(2rem, 7vw, 3rem); font-weight: 900; color: ${C.blue}; line-height: 1.1; margin-bottom: 12px; letter-spacing: -1px; }
+
+        #charola-builder .tb-textarea {
+          border: none !important;
+          border-bottom: 2px solid ${C.border} !important;
+          background: transparent !important;
+          border-radius: 0 !important;
+          padding: 12px 0 !important;
+        }
+        #charola-builder .tb-textarea:focus {
+          border-bottom-color: ${C.blue} !important;
+        }
+
+        #charola-builder .tb-hint {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: ${C.mutedLight};
+        }
+        #charola-builder .tb-hint kbd {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 22px;
+          height: 22px;
+          padding: 0 5px;
+          border-radius: 6px;
+          border: 1px solid ${C.border};
+          background: ${C.white};
+          font-family: inherit;
+          font-size: 0.72rem;
+          font-weight: 800;
+          color: ${C.muted};
+        }
 
         @media (max-width: 768px) {
+          #charola-builder .tb-hint { display: none !important; }
           #charola-builder .tb-slide-center {
             padding: 140px 16px 140px !important;
           }
@@ -211,6 +302,9 @@ export default function TrayBuilder() {
         {/* ── Fixed step counter + nav ── */}
         {step > 0 && step < totalSteps - 1 && (
           <div className="tb-nav-container">
+            <span className="tb-hint">
+              Presiona <kbd>↵</kbd> o <kbd>↓</kbd>
+            </span>
             <span style={{ fontSize: "0.85rem", fontWeight: 700, color: C.mutedLight, marginRight: 4 }}>
               {step} / {totalSteps - 2}
             </span>
@@ -305,8 +399,8 @@ function IntroSlide({ onStart }: { onStart: () => void }) {
         >
           Comenzar
         </button>
-        <p className="deli-desktop-only" style={{ marginTop: 24, fontSize: "0.85rem", color: C.mutedLight, fontWeight: 600 }}>
-          Presiona Enter ↵
+        <p className="tb-hint" style={{ marginTop: 24, justifyContent: "center", width: "100%" }}>
+          Presiona <kbd>↵</kbd> para comenzar
         </p>
       </div>
     </div>
@@ -333,8 +427,11 @@ function SizeSlide({ size, setSize, onNext }: { size: BoardSize; setSize: (s: Bo
         <h2 className="tb-h2">
           ¿Para cuántas personas?
         </h2>
-        <p style={{ color: C.muted, fontSize: "1.05rem", marginBottom: 32 }}>
+        <p style={{ color: C.muted, fontSize: "1.05rem", marginBottom: 12 }}>
           Selecciona el tamaño de tu tabla.
+        </p>
+        <p className="tb-hint" style={{ marginBottom: 20 }}>
+          Presiona <kbd>1</kbd>–<kbd>4</kbd> para elegir
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -419,7 +516,10 @@ function IngredientSlide({
           {count > 0 ? `${count} seleccionados` : "Selecciona"}
         </p>
         <h2 className="tb-h2">{title}</h2>
-        <p style={{ color: C.muted, fontSize: "1.05rem", marginBottom: 24 }}>{subtitle}</p>
+        <p style={{ color: C.muted, fontSize: "1.05rem", marginBottom: 8 }}>{subtitle}</p>
+        <p className="tb-hint" style={{ marginBottom: 20 }}>
+          Presiona <kbd>↵</kbd> o <kbd>↓</kbd> para continuar
+        </p>
 
         <div className="tb-grid">
           {items.map((item) => {
@@ -431,41 +531,47 @@ function IngredientSlide({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 12,
-                  padding: "14px 16px",
-                  borderRadius: 14,
-                  border: `2px solid ${isSel ? C.blue : C.borderLight}`,
-                  background: isSel ? "#EFF3F8" : C.white,
+                  justifyContent: "space-between",
+                  gap: 10,
+                  padding: "16px 8px",
+                  border: "none",
+                  borderBottom: `2px solid ${isSel ? C.blue : C.borderLight}`,
+                  background: "transparent",
                   cursor: "pointer",
                   textAlign: "left",
                   width: "100%",
+                  transition: "border-color .15s ease",
                 }}
               >
-                <div
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 6,
-                    border: `2px solid ${isSel ? C.blue : "#CBD5E1"}`,
-                    background: isSel ? C.blue : "transparent",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  {isSel && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.white} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.9rem", color: C.text, lineHeight: 1.2 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: "1rem", color: isSel ? C.blue : C.text, lineHeight: 1.25 }}>
                     {item.name}
                   </div>
                   {item.origin && (
-                    <div style={{ fontSize: "0.72rem", color: C.mutedLight, fontWeight: 600, marginTop: 2 }}>
+                    <div style={{ fontSize: "0.75rem", color: C.mutedLight, fontWeight: 600, marginTop: 2 }}>
                       {item.origin}
                     </div>
                   )}
                 </div>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    background: isSel ? C.blue : "transparent",
+                    flexShrink: 0,
+                    opacity: isSel ? 1 : 0,
+                    transform: isSel ? "scale(1)" : "scale(0.5)",
+                    transition: "opacity .15s ease, transform .15s ease, background .15s ease",
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.white} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
               </button>
             );
           })}
@@ -491,17 +597,15 @@ function NotesSlide({ notes, setNotes, onNext }: { notes: string; setNotes: (n: 
         </p>
 
         <textarea
+          className="tb-textarea"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Escribe aquí tus notas..."
-          rows={5}
+          rows={3}
+          autoFocus
           style={{
             width: "100%",
-            padding: "16px 20px",
-            borderRadius: 14,
-            border: `2px solid ${C.border}`,
-            background: C.white,
-            fontSize: "1rem",
+            fontSize: "1.3rem",
             fontFamily: "'Inter', sans-serif",
             color: C.text,
             resize: "vertical",
@@ -509,6 +613,9 @@ function NotesSlide({ notes, setNotes, onNext }: { notes: string; setNotes: (n: 
             lineHeight: 1.5,
           }}
         />
+        <p className="tb-hint" style={{ marginTop: 10 }}>
+          Presiona <kbd>↵</kbd> para continuar · <kbd>⇧</kbd>+<kbd>↵</kbd> para salto de línea
+        </p>
 
         <button
           className="tb-btn"
@@ -668,11 +775,14 @@ function ReviewSlide({
                 gap: 10,
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 448 512" fill="currentColor">
+              <svg width="19" height="22" viewBox="0 0 448 512" fill="currentColor">
                 <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157.1zM223.9 436.8c-31.9 0-63.1-8.5-90.6-24.6l-6.5-3.9-67.3 17.6 18-65.6-4.2-6.7C56.2 325.3 46 295 46 262.1c0-98.1 79.9-178 178.1-178 47.6 0 92.2 18.5 125.8 52.2 33.6 33.6 52.1 78.2 52.1 125.8-.1 98.2-79.9 178.1-178.1 178.1zM311.9 256.2c-4.8-2.4-28.5-14.1-32.9-15.7-4.4-1.6-7.6-2.4-10.8 2.4-3.2 4.8-12.4 15.7-15.3 18.9-2.8 3.2-5.6 3.6-10.4 1.2-4.8-2.4-20.3-7.5-38.7-24.1-14.3-12.9-24-28.8-26.8-33.6-2.8-4.8-.3-7.4 2.1-9.8 2.2-2.2 4.8-5.6 7.2-8.4 2.4-2.8 3.2-4.8 4.8-8 1.6-3.2.8-6-.4-8.4-1.2-2.4-10.8-26.1-14.8-35.7-4-9.3-8-8-10.8-8.1-2.8-.1-6-.1-9.2-.1-3.2 0-8.4 1.2-12.8 6-4.4 4.8-16.8 16.4-16.8 40.1 0 23.7 17.2 46.5 19.6 49.7 2.4 3.2 34 51.9 82.3 72.7 11.5 4.9 20.5 7.9 27.5 10.1 11.5 3.7 22 3.1 30.3 1.9 9.3-1.3 28.5-11.6 32.5-22.8 4-11.2 4-20.8 2.8-22.8-1.2-2.4-4.4-3.6-9.2-6z"/>
               </svg>
               Enviar por WhatsApp
             </button>
+            <p className="tb-hint" style={{ width: "100%", justifyContent: "center", marginTop: 4 }}>
+              Presiona <kbd>↵</kbd> para enviar
+            </p>
           </div>
         )}
       </div>

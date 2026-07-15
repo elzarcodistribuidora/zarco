@@ -116,17 +116,20 @@ const sections: LegalSection[] = [
 ];
 
 const priceNotice = (
-  <div className="mx-auto mb-10 max-w-[700px] border-l-2 border-amber-500 pl-5">
-    <h3 className="mb-1 text-[0.95rem] font-bold text-amber-800">
-      Nota Importante de Precios
-    </h3>
-    <p className="text-[0.85rem] leading-[1.5] text-amber-900/80">
-      <strong>Los precios mostrados son exclusivamente de referencia.</strong>{" "}
-      Debido a la constante actualización y volatilidad del mercado en
-      tienda física, el total final de su pedido podría tener
-      variaciones. El precio definitivo será confirmado por nuestros
-      agentes al procesar su solicitud.
-    </p>
+  <div className="relative mx-auto mb-10 flex max-w-[980px] items-start overflow-hidden rounded-[20px] border border-amber-300/50 bg-gradient-to-br from-amber-50 via-amber-50 to-amber-100/60 px-6 py-6 sm:px-8">
+    <div className="absolute inset-y-0 left-0 w-1.5 bg-amber-400" />
+    <div className="pl-2">
+      <h3 className="mb-1.5 text-base font-extrabold text-amber-900">
+        Nota Importante de Precios
+      </h3>
+      <p className="text-[0.9rem] leading-relaxed text-amber-900/80">
+        <strong className="text-amber-900">Los precios mostrados son exclusivamente de referencia.</strong>{" "}
+        Debido a la constante actualización y volatilidad del mercado en
+        tienda física, el total final de su pedido podría tener
+        variaciones. El precio definitivo será confirmado por nuestros
+        agentes al procesar su solicitud.
+      </p>
+    </div>
   </div>
 );
 

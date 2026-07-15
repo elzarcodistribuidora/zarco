@@ -557,16 +557,12 @@ export default function CatalogApp() {
           </div>
         </div>
 
-        <div className="mx-auto mt-8 flex max-w-[700px] items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/[0.08] p-4">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="mt-0.5 h-5 w-5 shrink-0 text-amber-700">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <div>
-            <h3 className="mb-1 text-sm font-bold text-amber-800">Nota Importante de Precios</h3>
-            <p className="text-[0.85rem] leading-tight text-amber-900/80">
-              <strong>Los precios mostrados son exclusivamente de referencia.</strong>{" "}
+        <div className="relative mx-auto mt-8 flex max-w-[980px] items-start overflow-hidden rounded-[20px] border border-amber-300/50 bg-gradient-to-br from-amber-50 via-amber-50 to-amber-100/60 px-6 py-6 sm:px-8">
+          <div className="absolute inset-y-0 left-0 w-1.5 bg-amber-400" />
+          <div className="pl-2">
+            <h3 className="mb-1.5 text-base font-extrabold text-amber-900">Nota Importante de Precios</h3>
+            <p className="text-[0.9rem] leading-relaxed text-amber-900/80">
+              <strong className="text-amber-900">Los precios mostrados son exclusivamente de referencia.</strong>{" "}
               Debido a la constante actualización y volatilidad del mercado en
               tienda física, el total final de su pedido podría tener
               variaciones. El precio definitivo será confirmado por nuestros

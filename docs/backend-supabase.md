@@ -41,6 +41,13 @@ cualquiera leía pedidos de cualquier email). Se migró a Supabase.
 - `proxy.ts` (Next 16 renombró *middleware* → **proxy**) refresca la sesión y
   **solo protege `/admin`**. `/perfil` y `/catalogo` son públicos (el invitado
   ve su prompt de login).
+- **`/portal/login`** (`src/app/portal/login/page.tsx`, jul 2026): pantalla de
+  login rediseñada como split screen — panel izquierdo navy (`1fr`, oculto en
+  móvil) con el logo real de El Zarco, degradado + resplandores decorativos y
+  tagline editorial, separado del panel derecho blanco (`2fr`, el botón
+  "Entrar con Google", sin tarjeta) por una línea roja Zarco (`border-r-4
+  border-[#A81200]`). Solo cambió el layout visual — el flujo de popup de
+  Google (`signInWithGoogle`) no se tocó.
 - **Requisito de config (Supabase Dashboard → Auth → URL Configuration):**
   Site URL = dominio prod; Redirect URLs = `https://DOMINIO/**` y
   `http://localhost:3000/**`. En Google Cloud: JS origins (localhost + supabase

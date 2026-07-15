@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import DelicatessenNavbar from "@/components/DelicatessenNavbar";
 import DelicatessenFooter from "@/components/DelicatessenFooter";
 import Reveal from "@/components/marketing/Reveal";
@@ -40,24 +41,21 @@ const SUBNAV = [
 const TIERS = [
   {
     popular: false,
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="15" rx="3" fill="currentColor" fill-opacity="0.1" /><rect x="4" y="6" width="16" height="15" rx="3" /><path d="M10 6V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3" /><circle cx="12" cy="4" r="0.5" fill="currentColor" /><path d="M14.5 17.5l-5-2.5v-3.5l5 2.5v3.5z" fill="currentColor" fill-opacity="0.2"/><path d="M14.5 17.5l-5-2.5v-3.5l5 2.5v3.5z" /><path d="M9.5 11.5l3.5-3 5 3-3.5 3-5-3z" fill="currentColor" fill-opacity="0.1"/><path d="M9.5 11.5l3.5-3 5 3-3.5 3-5-3z" /><path d="M18 14.5l-3.5 3" /><circle cx="12" cy="15" r="0.5" fill="currentColor" /><circle cx="14" cy="13.5" r="0.75" fill="currentColor" /><circle cx="7" cy="15" r="1" fill="currentColor"/><circle cx="8" cy="16.5" r="1" fill="currentColor"/><circle cx="6" cy="16.5" r="1" fill="currentColor"/><circle cx="7" cy="18" r="1" fill="currentColor"/></svg>',
     title: "Tabla Clásica",
     text: "Quesos nacionales, jamón de pierna, salami y frutas de temporada. Ideal para reuniones íntimas.",
-    badge: "6-10 PERSONAS",
+    badge: "6-10 personas",
   },
   {
     popular: true,
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10c0-1.5 1-2.5 1-4V3h2v3c0 1.5 1 2.5 1 4v11H4V10z" fill="currentColor" fill-opacity="0.1" /><path d="M4 10c0-1.5 1-2.5 1-4V3h2v3c0 1.5 1 2.5 1 4v11H4V10z" /><path d="M4 14h4" /><path d="M11 9l.5 3c.3 1.5-.5 3-2 3.5h0c-1.5-.5-2.3-2-2-3.5L8 9h3z" fill="currentColor" fill-opacity="0.1" /><path d="M11 9l.5 3c.3 1.5-.5 3-2 3.5h0c-1.5-.5-2.3-2-2-3.5L8 9h3z" /><path d="M9.5 15.5v4.5" /><path d="M8 20h3" /><path d="M14 18c0-2 2-3 4-3s4 1 4 3v3H14v-3z" fill="currentColor" fill-opacity="0.1" /><path d="M14 18c0-2 2-3 4-3s4 1 4 3v3H14v-3z" /><circle cx="16" cy="19" r="1" fill="currentColor" /><circle cx="19" cy="19" r="1" fill="currentColor" /><path d="M18 4l1 2h2l-1.5 1.5.5 2L18 8.5 16 9.5l.5-2L15 6h2l1-2z" fill="currentColor" /></svg>',
     title: "Charola Premium",
     text: "Quesos maduros, brie, gouda, chorizo español, prosciutto y complementos selectos. Para corporativos.",
-    badge: "✦ MÁS POPULAR ✦",
+    badge: "Más popular",
   },
   {
     popular: false,
-    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c0-5 4-9 9-9s9 4 9 9" fill="currentColor" fill-opacity="0.1" /><path d="M3 16c0-5 4-9 9-9s9 4 9 9" /><path d="M10 7a2 2 0 1 1 4 0" /><path d="M2 16h20v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2z" fill="currentColor" fill-opacity="0.2" /><path d="M2 16h20v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2z" /><path d="M6 20v1" /><path d="M18 20v1" /><path d="M20 5l1 1 1-1-1-1-1 1z" fill="currentColor" /><path d="M4 8l1 1 1-1-1-1-1 1z" fill="currentColor" /></svg>',
     title: "Gran Buffet",
     text: "Montaje de charcutería con variedad extensa. Para bodas, exposiciones y eventos de alto nivel.",
-    badge: "20+ PERSONAS",
+    badge: "20+ personas",
   },
 ];
 
@@ -154,10 +152,7 @@ export default function DelicatessenPage() {
           </nav>
         </Reveal>
 
-        <section
-          id="servicio-charolas"
-          className="mx-auto mb-16 w-[90%] max-w-[1200px] rounded-3xl bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.03)] lg:p-14"
-        >
+        <section id="servicio-charolas" className="mx-auto mb-16 w-[90%] max-w-[1200px] py-8 lg:py-14">
           <Reveal>
             <div className="mb-10 text-center">
               <h2 className="mb-3 text-2xl font-black tracking-[-1px] text-brand-navy uppercase lg:text-4xl">
@@ -172,30 +167,48 @@ export default function DelicatessenPage() {
           </Reveal>
 
           <Reveal>
-            <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div className="mb-10 divide-y divide-slate-200 border-y border-slate-200">
               {TIERS.map((t) => (
-                <div
+                <Link
                   key={t.title}
-                  className={`flex flex-col items-center rounded-2xl border p-8 text-center transition-transform hover:-translate-y-2 ${
-                    t.popular
-                      ? "-translate-y-1 border-brand-red/30 shadow-[0_10px_25px_rgba(168,18,0,0.1)]"
-                      : "border-slate-100 shadow-[0_5px_15px_rgba(10,34,64,0.04)]"
+                  href="/delicatessen/arma-tu-charola"
+                  className={`group relative flex flex-col gap-4 py-7 pr-16 pl-6 transition-colors md:flex-row md:items-center md:gap-10 md:py-8 ${
+                    t.popular ? "bg-brand-red/[0.03] hover:bg-brand-red/[0.05]" : "hover:bg-slate-50"
                   }`}
                 >
-                  <div
-                    className="mb-4 h-10 w-10 text-brand-red [&>svg]:h-10 [&>svg]:w-10"
-                    dangerouslySetInnerHTML={{ __html: t.icon }}
+                  <span
+                    className={`absolute top-0 left-0 h-full w-1 ${t.popular ? "bg-brand-red" : "bg-transparent"}`}
                   />
-                  <h3 className="mb-2 text-xl font-extrabold text-brand-navy">{t.title}</h3>
-                  <p className="mb-4 text-sm text-slate-500">{t.text}</p>
-                  <p
-                    className={`mt-auto w-full border-t pt-4 text-xs font-extrabold tracking-[2px] uppercase ${
-                      t.popular ? "border-brand-red/10 text-brand-navy" : "border-brand-red/10 text-brand-red"
+                  <h3 className="flex items-center gap-2 text-xl font-black tracking-wide text-brand-navy uppercase md:w-64 md:shrink-0 lg:text-2xl">
+                    {t.title}
+                    {t.popular && (
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-brand-red">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    )}
+                  </h3>
+                  <p className="flex-1 text-sm leading-relaxed text-slate-500 md:text-base">
+                    {t.text}
+                  </p>
+                  <span
+                    className={`inline-flex w-fit shrink-0 items-center rounded-full px-4 py-1.5 text-[0.7rem] font-extrabold tracking-[1.5px] uppercase ${
+                      t.popular ? "bg-brand-red text-white" : "border border-slate-200 text-slate-500"
                     }`}
                   >
                     {t.badge}
-                  </p>
-                </div>
+                  </span>
+                  <span
+                    className={`absolute top-1/2 right-6 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-300 ${
+                      t.popular
+                        ? "bg-brand-red text-white"
+                        : "bg-slate-100 text-brand-navy opacity-0 group-hover:opacity-100"
+                    } translate-x-1 group-hover:translate-x-0`}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </span>
+                </Link>
               ))}
             </div>
           </Reveal>
@@ -218,17 +231,15 @@ export default function DelicatessenPage() {
 
           <Reveal>
             <div className="text-center">
-              <a
-                href="https://wa.me/522298477440?text=Hola%2C%20estoy%20interesado%20en%20cotizar%20una%20Charola%20Premium."
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                href="/delicatessen/arma-tu-charola"
                 className="inline-flex items-center gap-3 rounded-full bg-brand-red px-10 py-4 font-black tracking-[2px] text-white uppercase transition-transform hover:-translate-y-1 hover:bg-[#7a0a00]"
               >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
                 Cotizar mi Charola Ahora
-              </a>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </Link>
             </div>
           </Reveal>
         </section>
@@ -272,18 +283,6 @@ export default function DelicatessenPage() {
         btnLabel="Contáctanos"
         variant="red"
       />
-
-      <a
-        href="https://wa.me/522298477440?text=Hola%2C%20quiero%20info%20sobre%20delicatessen."
-        target="_blank"
-        rel="noreferrer"
-        className="fixed right-5 bottom-5 z-[9999] flex items-center gap-2.5 rounded-full bg-brand-green px-6 py-3 font-black tracking-[1px] text-white shadow-[0_8px_25px_rgba(37,211,102,0.4)] transition-all hover:-translate-y-1 hover:bg-[#20ba56] sm:right-[30px] sm:bottom-[30px]"
-      >
-        <svg viewBox="0 0 448 512" className="h-[22px] w-[22px] fill-current">
-          <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157.1zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3s19.9 53.7 22.6 57.4c2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z" />
-        </svg>
-        <span className="hidden sm:inline">Atención a Clientes</span>
-      </a>
 
       <DelicatessenFooter />
     </>

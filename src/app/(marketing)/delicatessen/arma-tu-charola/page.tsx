@@ -48,30 +48,17 @@ export default function ArmaTuCharolaPage() {
           display: block;
         }
       `}} />
-      {/* Banner desktop-only */}
-      <section style={{
-        width: '100%',
-        maxWidth: '1400px',
-        margin: '0 auto',
-        paddingTop: 'var(--navbar-h)',
-        paddingLeft: '5%',
-        paddingRight: '5%',
-      }}>
+      <header className="w-full overflow-hidden pt-[var(--navbar-h)]">
         <picture>
           <source media="(max-width: 768px)" srcSet="/banners/charolas-movil.png" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/banners/charolas-desk.png"
             alt="Arma tu Charola - El Zarco Delicatessen"
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              borderRadius: '16px',
-              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-            }}
+            className="block w-full"
           />
         </picture>
-      </section>
+      </header>
       <main id="charola-builder">
         <TrayBuilder />
       </main>
