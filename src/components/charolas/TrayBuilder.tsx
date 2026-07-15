@@ -273,7 +273,9 @@ export default function TrayBuilder() {
           }
           #charola-builder .tb-nav-container {
             bottom: 24px;
-            right: 16px;
+            right: auto;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(255,255,255,0.9);
             padding: 8px 12px;
             border-radius: 40px;
