@@ -132,7 +132,7 @@ export default function DelicatessenPage() {
         </Reveal>
 
         <Reveal>
-          <nav className="sticky top-[var(--navbar-h)] z-10 mt-6 mb-10 flex justify-center px-4">
+          <nav className="sticky top-[var(--navbar-h)] z-10 mt-4 mb-3 flex justify-center px-4 lg:mt-6 lg:mb-10">
             <ul className="flex max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-slate-100 bg-white p-1.5 shadow-[0_8px_24px_rgba(10,34,64,0.08)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {SUBNAV.map((l, i) => (
                 <li key={l.href} className="shrink-0">
@@ -152,13 +152,13 @@ export default function DelicatessenPage() {
           </nav>
         </Reveal>
 
-        <section id="servicio-charolas" className="mx-auto mb-16 w-[90%] max-w-[1200px] py-8 lg:py-14">
+        <section id="servicio-charolas" className="mx-auto mb-16 w-[90%] max-w-[1200px] py-2 lg:py-14">
           <Reveal>
-            <div className="mb-10 text-center">
-              <h2 className="mb-3 text-2xl font-black tracking-[-1px] text-brand-navy uppercase lg:text-4xl">
+            <div className="mb-4 text-center lg:mb-10">
+              <h2 className="mb-2 text-2xl font-black tracking-[-1px] text-brand-navy uppercase lg:mb-3 lg:text-4xl">
                 Charolas &amp; Tablas <span className="text-brand-red">Premium</span>
               </h2>
-              <p className="mx-auto max-w-2xl text-slate-500">
+              <p className="mx-auto max-w-2xl text-sm text-slate-500 lg:text-base">
                 Nuestras charolas de quesos finos y embutidos premium son el
                 centro de atención perfecto para bodas, brindis corporativos y
                 reuniones íntimas.
@@ -167,19 +167,19 @@ export default function DelicatessenPage() {
           </Reveal>
 
           <Reveal>
-            <div className="mb-10 divide-y divide-slate-200 border-y border-slate-200">
+            <div className="mb-4 divide-y divide-slate-200 border-y border-slate-200 lg:mb-10">
               {TIERS.map((t) => (
                 <Link
                   key={t.title}
                   href="/delicatessen/arma-tu-charola"
-                  className={`group relative flex flex-col gap-4 py-7 pr-16 pl-6 transition-colors md:flex-row md:items-center md:gap-10 md:py-8 ${
+                  className={`group relative flex flex-col gap-2 py-4 pr-14 pl-5 transition-colors md:flex-row md:items-center md:gap-10 md:py-8 md:pr-16 md:pl-6 ${
                     t.popular ? "bg-brand-red/[0.03] hover:bg-brand-red/[0.05]" : "hover:bg-slate-50"
                   }`}
                 >
                   <span
                     className={`absolute top-0 left-0 h-full w-1 ${t.popular ? "bg-brand-red" : "bg-transparent"}`}
                   />
-                  <h3 className="flex items-center gap-2 text-xl font-black tracking-wide text-brand-navy uppercase md:w-64 md:shrink-0 lg:text-2xl">
+                  <h3 className="flex items-center gap-2 text-lg font-black tracking-wide text-brand-navy uppercase md:w-64 md:shrink-0 lg:text-2xl">
                     {t.title}
                     {t.popular && (
                       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 shrink-0 text-brand-red">
@@ -187,7 +187,7 @@ export default function DelicatessenPage() {
                       </svg>
                     )}
                   </h3>
-                  <p className="flex-1 text-sm leading-relaxed text-slate-500 md:text-base">
+                  <p className="flex-1 text-sm leading-snug text-slate-500 md:leading-relaxed md:text-base">
                     {t.text}
                   </p>
                   <span
@@ -198,7 +198,7 @@ export default function DelicatessenPage() {
                     {t.badge}
                   </span>
                   <span
-                    className={`absolute top-1/2 right-6 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-300 ${
+                    className={`absolute top-1/2 right-5 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-300 md:right-6 md:h-9 md:w-9 ${
                       t.popular
                         ? "bg-brand-red text-white"
                         : "bg-slate-100 text-brand-navy opacity-0 group-hover:opacity-100"
@@ -214,7 +214,7 @@ export default function DelicatessenPage() {
           </Reveal>
 
           <Reveal>
-            <div className="mb-10 grid grid-cols-2 gap-5 border-y border-slate-200 py-8 lg:grid-cols-4">
+            <div className="mb-4 grid grid-cols-2 gap-3 border-y border-slate-200 py-4 lg:mb-10 lg:grid-cols-4 lg:gap-5 lg:py-8">
               {[
                 { n: "48h", l: "Preparación" },
                 { n: "100%", l: "Frescura" },
@@ -222,8 +222,8 @@ export default function DelicatessenPage() {
                 { n: "A tu medida", l: "Personalización" },
               ].map((s) => (
                 <div key={s.l} className="text-center">
-                  <div className="mb-1 text-2xl font-black text-brand-red">{s.n}</div>
-                  <p className="text-xs font-extrabold tracking-[1px] text-slate-500 uppercase">{s.l}</p>
+                  <div className="mb-1 text-xl font-black text-brand-red lg:text-2xl">{s.n}</div>
+                  <p className="text-[0.65rem] font-extrabold tracking-[1px] text-slate-500 uppercase lg:text-xs">{s.l}</p>
                 </div>
               ))}
             </div>
@@ -233,7 +233,7 @@ export default function DelicatessenPage() {
             <div className="text-center">
               <Link
                 href="/delicatessen/arma-tu-charola"
-                className="inline-flex items-center gap-3 rounded-full bg-brand-red px-10 py-4 font-black tracking-[2px] text-white uppercase transition-transform hover:-translate-y-1 hover:bg-[#7a0a00]"
+                className="inline-flex items-center gap-3 rounded-full bg-brand-red px-8 py-3 text-sm font-black tracking-[2px] text-white uppercase transition-transform hover:-translate-y-1 hover:bg-[#7a0a00] lg:px-10 lg:py-4 lg:text-base"
               >
                 Cotizar mi Charola Ahora
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">

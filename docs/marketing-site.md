@@ -346,6 +346,18 @@ popular. Toda la fila es un `<Link>` a `/delicatessen/arma-tu-charola`
 (siempre visible en la fila popular) — mismo lenguaje de interacción que las
 tarjetas de `CatalogRecs`/`ProductCarousel`.
 
+Esta sección (`#servicio-charolas`, `delicatessen/page.tsx`) se hizo más
+delgada en móvil (jul 2026) — antes cada bloque (encabezado, las 3 filas de
+tier, la franja de 4 estadísticas, el botón CTA) traía el mismo padding
+generoso que en escritorio, y sumado ocupaba mucho scroll en pantallas
+angostas. Se redujeron paddings/márgenes/tamaños de texto **solo en móvil**
+(clases base sin prefijo, con `lg:` conservando los valores originales de
+escritorio): el `<nav>` de la píldora de filtros pasó de `mb-10` a `mb-3`
+(queda pegado a la sección), el bloque de encabezado de `mb-10` a `mb-4`, las
+filas de tier de `py-7` a `py-4` (con `md:py-8` de vuelta en desktop), la
+franja de estadísticas de `py-8`/`gap-5` a `py-4`/`gap-3`, y el botón CTA de
+`px-10 py-4` a `px-8 py-3`. Nada de esto tocó el layout de escritorio.
+
 ### Ícono de WhatsApp deformado (bug de sitewide, jul 2026)
 
 El glyph de WhatsApp (path de Font Awesome, `viewBox="0 0 448 512"`) se
