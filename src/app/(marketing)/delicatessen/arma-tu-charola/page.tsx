@@ -48,7 +48,7 @@ export default function ArmaTuCharolaPage() {
           display: block;
         }
       `}} />
-      <header className="w-full overflow-hidden pt-[var(--navbar-h)]">
+      <header className="relative w-full overflow-hidden pt-[var(--navbar-h)]">
         <picture>
           <source media="(max-width: 768px)" srcSet="/banners/charolas-movil.png" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -58,6 +58,14 @@ export default function ArmaTuCharolaPage() {
             className="block w-full"
           />
         </picture>
+        <div className="absolute inset-x-0 bottom-4 hidden justify-center md:flex">
+          <span className="inline-flex animate-bounce items-center gap-1.5 rounded-full bg-black/55 px-4 py-2 text-xs font-bold text-white backdrop-blur-sm">
+            Desliza para armar tu charola
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+              <path d="M12 5v14M19 12l-7 7-7-7" />
+            </svg>
+          </span>
+        </div>
       </header>
       <main id="charola-builder">
         <TrayBuilder />

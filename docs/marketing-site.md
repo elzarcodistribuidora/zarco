@@ -437,6 +437,26 @@ código porque quedaban apilados uno sobre otro con el mismo z-index.
   del producto lo dice explícitamente (p. ej. "Brie Danés" → Dinamarca).
   `TrayBuilder.tsx` no cambió — solo consume `name`/`origin`/`category` de
   `trayData.ts`, así que el rediseño no tocó lógica del componente.
+- **Ingredientes: de nombres con marca a nombres genéricos (jul 2026)**: la
+  vuelta anterior (basada 1:1 en SKUs reales) quedó con marcas comerciales en
+  el nombre ("Manchego El Zarco", "Jamón Serrano Tangamanga", "Paté Zwan") —
+  a pedido del usuario se quitaron las marcas para no atarse a una sola
+  referencia de proveedor. `trayData.ts` ahora usa nombres genéricos de tipo
+  de producto (Brie, Manchego, Jamón Serrano, Prosciutto, Mermelada de
+  Frutos Rojos) y el campo `origin` pasó de mostrar la marca a mostrar el
+  país/estilo del queso o embutido (Francia, España, Italia — descriptor de
+  denominación, no una marca). Se sumaron además unos clásicos de charola
+  muy comunes y fáciles de conseguir que hoy no están en el catálogo de El
+  Zarco (uvas y fresas frescas, aceitunas negras, Bresaola) — a propósito
+  sobre todo en carnes frías y frutas/aceitunas, por pedido explícito del
+  usuario.
+- **Aviso de scroll en el banner de intro, solo en escritorio (jul 2026)**:
+  se agregó una píldora semitransparente ("Desliza para armar tu charola" +
+  flecha) superpuesta en la parte baja del banner de
+  `arma-tu-charola/page.tsx` (`<header className="relative ...">`), visible
+  **solo en escritorio** (`hidden md:flex`) — en móvil el formulario ya
+  queda visible sin necesidad del aviso (ver el fix de espaciado banner/intro
+  arriba), así que ahí se deja oculto.
 - **Espacio entre el banner y el intro del formulario, corregido en móvil
   (jul 2026)**: el primer paso (`IntroSlide`, `.tb-intro-slide`) dejaba
   ~265px de espacio en blanco entre el banner y el título "Arma tu Charola"
