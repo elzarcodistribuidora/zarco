@@ -269,7 +269,12 @@ export default function TrayBuilder() {
             padding: 140px 16px 140px !important;
           }
           #charola-builder .tb-intro-slide {
-            padding-top: 100px !important;
+            min-height: 0 !important;
+            padding-top: 32px !important;
+          }
+          #charola-builder .tb-intro-slide > div {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
           }
           #charola-builder .tb-nav-container {
             bottom: 24px;

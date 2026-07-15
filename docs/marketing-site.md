@@ -425,6 +425,21 @@ código porque quedaban apilados uno sobre otro con el mismo z-index.
   del producto lo dice explícitamente (p. ej. "Brie Danés" → Dinamarca).
   `TrayBuilder.tsx` no cambió — solo consume `name`/`origin`/`category` de
   `trayData.ts`, así que el rediseño no tocó lógica del componente.
+- **Espacio entre el banner y el intro del formulario, corregido en móvil
+  (jul 2026)**: el primer paso (`IntroSlide`, `.tb-intro-slide`) dejaba
+  ~265px de espacio en blanco entre el banner y el título "Arma tu Charola"
+  en móvil. Bajar el `padding-top` de `100px` a `32px` en el media query
+  `@media (max-width: 768px)` **no tuvo efecto por sí solo**: `.tb-slide`
+  fuerza `min-height: 100vh`, y `.tb-intro-slide > div` tiene
+  `margin-top/bottom: auto` para centrar verticalmente el contenido — ese
+  centrado domina sobre `justify-content: flex-start` y sobre cualquier
+  cambio al `padding-top`, porque el hijo queda centrado en lo que mida el
+  contenedor (100vh) sin importar el padding. Se corrigió agregando, dentro
+  del mismo media query, `min-height: 0 !important` a `.tb-intro-slide` y
+  `margin-top/bottom: 0 !important` a `.tb-intro-slide > div` — así el
+  contenido ya no se centra en una caja de pantalla completa y el
+  `padding-top` de 32px sí controla la posición real (gap final ~66px,
+  verificado con Playwright en 390×844).
 
 ## `/perfil`
 
