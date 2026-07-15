@@ -457,6 +457,22 @@ código porque quedaban apilados uno sobre otro con el mismo z-index.
   **solo en escritorio** (`hidden md:flex`) — en móvil el formulario ya
   queda visible sin necesidad del aviso (ver el fix de espaciado banner/intro
   arriba), así que ahí se deja oculto.
+- **Pedido mínimo de 5 charolas (jul 2026)**: `TrayBuilder.tsx` suma un
+  estado `trayCount` (`MIN_TRAYS = 5`, clamp con `Math.max` en
+  `updateTrayCount` — nunca baja de 5) con su propio stepper (−/+), visible
+  en `SizeSlide` (paso 1, justo debajo de las opciones de tamaño) y de nuevo
+  en `ReviewSlide` (paso 6, junto a la tarjeta de "Tamaño"). El aviso "Pedido
+  mínimo: 5 charolas" en rojo aparece en 3 puntos del flujo: `IntroSlide`,
+  `SizeSlide` y `ReviewSlide`. El gramaje de cada ingrediente (`item.quantity`)
+  sigue representando la cantidad **por charola** (sin cambios en
+  `toggleItem`/`updateQty`) — lo nuevo es que en el resumen cada control de
+  cantidad ahora muestra el **total** (`item.quantity * trayCount`, en rojo
+  grande) con el detalle "por charola" debajo en chico, y ese total se
+  recalcula en vivo tanto al ajustar el gramaje de un ingrediente como al
+  cambiar el número de charolas. El mensaje de WhatsApp (`sendWhatsApp`)
+  incluye la línea `*Número de charolas:* N (pedido mínimo: 5)` y cada
+  ingrediente se manda como `cantidad/charola × N = total`, para que el
+  equipo de ventas reciba el total ya calculado, no solo el gramaje unitario.
 - **Espacio entre el banner y el intro del formulario, corregido en móvil
   (jul 2026)**: el primer paso (`IntroSlide`, `.tb-intro-slide`) dejaba
   ~265px de espacio en blanco entre el banner y el título "Arma tu Charola"

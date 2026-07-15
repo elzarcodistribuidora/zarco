@@ -7,6 +7,8 @@ import { cheeses, meats, extras, type Ingredient } from "./trayData";
 /* ── Types ── */
 type BoardSize = "pequeña" | "mediana" | "grande" | "jumbo" | null;
 
+const MIN_TRAYS = 5;
+
 interface SelectedItem {
   id: string;
   name: string;
@@ -61,12 +63,17 @@ function scrollToBuilderTop() {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
 export default function TrayBuilder() {
-  const [step, setStep] = useState(0); 
+  const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [size, setSize] = useState<BoardSize>(null);
   const [items, setItems] = useState<SelectedItem[]>([]);
   const [notes, setNotes] = useState("");
+  const [trayCount, setTrayCount] = useState(MIN_TRAYS);
   const totalSteps = 7;
+
+  const updateTrayCount = useCallback((delta: number) => {
+    setTrayCount((c) => Math.max(MIN_TRAYS, c + delta));
+  }, []);
 
   const next = useCallback(() => {
     if (step < totalSteps - 1) { setDir(1); setStep((s) => s + 1); scrollToBuilderTop(); }
@@ -100,18 +107,20 @@ export default function TrayBuilder() {
 
   const sendWhatsApp = useCallback(() => {
     if (!size) return;
-    let t = `Hola, quiero cotizar una charola:\n\n`;
-    t += `*Tamaño:* ${size.charAt(0).toUpperCase() + size.slice(1)}\n\n`;
+    const fmt = (i: SelectedItem) => `  · ${i.name} — ${i.quantity}${i.unit}/charola × ${trayCount} = ${i.quantity * trayCount}${i.unit}`;
+    let t = `Hola, quiero cotizar charolas:\n\n`;
+    t += `*Tamaño:* ${size.charAt(0).toUpperCase() + size.slice(1)}\n`;
+    t += `*Número de charolas:* ${trayCount} (pedido mínimo: ${MIN_TRAYS})\n\n`;
     const c = items.filter((i) => i.category === "cheese");
-    if (c.length) t += `*Quesos:*\n${c.map((i) => `  · ${i.name} — ${i.quantity}${i.unit}`).join("\n")}\n\n`;
+    if (c.length) t += `*Quesos:*\n${c.map(fmt).join("\n")}\n\n`;
     const m = items.filter((i) => i.category === "meat");
-    if (m.length) t += `*Carnes Frías:*\n${m.map((i) => `  · ${i.name} — ${i.quantity}${i.unit}`).join("\n")}\n\n`;
+    if (m.length) t += `*Carnes Frías:*\n${m.map(fmt).join("\n")}\n\n`;
     const e = items.filter((i) => i.category === "extra");
-    if (e.length) t += `*Acompañamientos:*\n${e.map((i) => `  · ${i.name} — ${i.quantity}${i.unit}`).join("\n")}\n\n`;
+    if (e.length) t += `*Acompañamientos:*\n${e.map(fmt).join("\n")}\n\n`;
     if (notes.trim()) t += `*Notas adicionales:*\n${notes.trim()}\n\n`;
     t += `¿Me pueden dar precio?`;
     window.open(`https://wa.me/522298477440?text=${encodeURIComponent(t)}`, "_blank");
-  }, [size, items, notes]);
+  }, [size, items, notes, trayCount]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -335,7 +344,7 @@ export default function TrayBuilder() {
             transition={{ duration: 0.35, ease: "easeOut" }}
           >
             {step === 0 && <IntroSlide onStart={next} />}
-            {step === 1 && <SizeSlide size={size} setSize={setSize} onNext={next} />}
+            {step === 1 && <SizeSlide size={size} setSize={setSize} onNext={next} trayCount={trayCount} updateTrayCount={updateTrayCount} />}
             {step === 2 && <IngredientSlide title="¿Qué quesos quieres?" subtitle="Selecciona todos los que necesites." items={cheeses} selected={items} toggle={toggleItem} />}
             {step === 3 && <IngredientSlide title="¿Carnes frías?" subtitle="Elige tus favoritas." items={meats} selected={items} toggle={toggleItem} />}
             {step === 4 && <IngredientSlide title="Acompañamientos" subtitle="Todo lo que complementa tu tabla." items={extras} selected={items} toggle={toggleItem} />}
@@ -345,6 +354,8 @@ export default function TrayBuilder() {
                 size={size}
                 items={items}
                 notes={notes}
+                trayCount={trayCount}
+                updateTrayCount={updateTrayCount}
                 updateQty={updateQty}
                 removeItem={removeItem}
                 onSend={sendWhatsApp}
@@ -406,7 +417,10 @@ function IntroSlide({ onStart }: { onStart: () => void }) {
         >
           Comenzar
         </button>
-        <p className="tb-hint" style={{ marginTop: 24, justifyContent: "center", width: "100%" }}>
+        <p style={{ marginTop: 16, fontSize: "0.8rem", fontWeight: 700, color: C.red, letterSpacing: 0.5 }}>
+          Pedido mínimo: {MIN_TRAYS} charolas
+        </p>
+        <p className="tb-hint" style={{ marginTop: 10, justifyContent: "center", width: "100%" }}>
           Presiona <kbd>↵</kbd> para comenzar
         </p>
       </div>
@@ -424,7 +438,19 @@ const sizes: { id: BoardSize; label: string; pax: string; letter: string }[] = [
   { id: "jumbo", label: "Jumbo", pax: "16 – 25 personas", letter: "D" },
 ];
 
-function SizeSlide({ size, setSize, onNext }: { size: BoardSize; setSize: (s: BoardSize) => void; onNext: () => void }) {
+function SizeSlide({
+  size,
+  setSize,
+  onNext,
+  trayCount,
+  updateTrayCount,
+}: {
+  size: BoardSize;
+  setSize: (s: BoardSize) => void;
+  onNext: () => void;
+  trayCount: number;
+  updateTrayCount: (delta: number) => void;
+}) {
   return (
     <div className="tb-slide tb-slide-center">
       <div style={{ maxWidth: 600, width: "100%" }}>
@@ -492,6 +518,20 @@ function SizeSlide({ size, setSize, onNext }: { size: BoardSize; setSize: (s: Bo
               </button>
             );
           })}
+        </div>
+
+        <div style={{ marginTop: 24, padding: "16px 20px", background: C.white, borderRadius: 16, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "0.95rem", color: C.text }}>Número de charolas</div>
+            <div style={{ fontSize: "0.78rem", color: C.red, fontWeight: 700, marginTop: 2 }}>Pedido mínimo: {MIN_TRAYS} charolas</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 0, background: C.bg, borderRadius: 10, border: `1px solid ${C.border}`, overflow: "hidden", flexShrink: 0 }}>
+            <button onClick={() => updateTrayCount(-1)} style={qtyBtnStyle} aria-label="Menos charolas">−</button>
+            <span style={{ minWidth: 40, textAlign: "center", fontWeight: 900, fontSize: "0.95rem", color: C.red, padding: "6px 4px" }}>
+              {trayCount}
+            </span>
+            <button onClick={() => updateTrayCount(1)} style={qtyBtnStyle} aria-label="Más charolas">+</button>
+          </div>
         </div>
       </div>
     </div>
@@ -657,6 +697,8 @@ function ReviewSlide({
   size,
   items,
   notes,
+  trayCount,
+  updateTrayCount,
   updateQty,
   removeItem,
   onSend,
@@ -665,6 +707,8 @@ function ReviewSlide({
   size: BoardSize;
   items: SelectedItem[];
   notes: string;
+  trayCount: number;
+  updateTrayCount: (delta: number) => void;
   updateQty: (id: string, delta: number) => void;
   removeItem: (id: string) => void;
   onSend: () => void;
@@ -688,9 +732,24 @@ function ReviewSlide({
         </p>
 
         {/* Size */}
-        <div style={{ padding: "16px 20px", background: C.white, borderRadius: 14, border: `1px solid ${C.border}`, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "16px 20px", background: C.white, borderRadius: 14, border: `1px solid ${C.border}`, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontWeight: 700, color: C.muted, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: 1 }}>Tamaño</span>
           <span style={{ fontWeight: 900, color: C.blue, fontSize: "1rem", textTransform: "capitalize" }}>{size || "—"}</span>
+        </div>
+
+        {/* Tray count */}
+        <div style={{ padding: "16px 20px", background: C.white, borderRadius: 14, border: `1px solid ${C.border}`, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <div>
+            <span style={{ fontWeight: 700, color: C.muted, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: 1, display: "block" }}>Charolas</span>
+            <span style={{ fontSize: "0.72rem", color: C.red, fontWeight: 700 }}>Pedido mínimo: {MIN_TRAYS}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 0, background: C.bg, borderRadius: 10, border: `1px solid ${C.border}`, overflow: "hidden", flexShrink: 0 }}>
+            <button onClick={() => updateTrayCount(-1)} style={qtyBtnStyle} aria-label="Menos charolas">−</button>
+            <span style={{ minWidth: 40, textAlign: "center", fontWeight: 900, fontSize: "0.95rem", color: C.red, padding: "6px 4px" }}>
+              {trayCount}
+            </span>
+            <button onClick={() => updateTrayCount(1)} style={qtyBtnStyle} aria-label="Más charolas">+</button>
+          </div>
         </div>
 
         {/* Groups */}
@@ -718,12 +777,17 @@ function ReviewSlide({
                   >
                     <span style={{ flex: 1, fontWeight: 700, fontSize: "0.9rem", color: C.text }}>{item.name}</span>
 
-                    {/* Qty controls */}
+                    {/* Qty controls (por charola) */}
                     <div style={{ display: "flex", alignItems: "center", gap: 0, background: C.bg, borderRadius: 10, border: `1px solid ${C.border}`, overflow: "hidden" }}>
                       <button onClick={() => updateQty(item.id, -1)} style={qtyBtnStyle}>−</button>
-                      <span style={{ minWidth: 48, textAlign: "center", fontWeight: 900, fontSize: "0.78rem", color: C.red, padding: "6px 4px" }}>
-                        {item.quantity}{item.unit}
-                      </span>
+                      <div style={{ minWidth: 76, textAlign: "center", padding: "4px 4px" }}>
+                        <div style={{ fontWeight: 900, fontSize: "0.78rem", color: C.red, lineHeight: 1.15 }}>
+                          {item.quantity * trayCount}{item.unit}
+                        </div>
+                        <div style={{ fontSize: "0.58rem", color: C.mutedLight, fontWeight: 700, lineHeight: 1 }}>
+                          {item.quantity}{item.unit}/charola
+                        </div>
+                      </div>
                       <button onClick={() => updateQty(item.id, 1)} style={qtyBtnStyle}>+</button>
                     </div>
 
