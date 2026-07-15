@@ -51,10 +51,17 @@ button {
   cursor: pointer;
 }
 
-/* Mismo caso: <ul>/<li> traen viñetas nativas (list-style: disc) sin preflight. */
+/* Mismo caso: <ul>/<li> traen viñetas nativas (list-style: disc) sin preflight.
+   También traen `padding-inline-start: 40px` nativo (indentación de lista) —
+   sin quitarlo, cualquier <ul> con `w-full`/flex queda 40px más angosto de lo
+   que su contenedor espera, empujando el contenido hacia la derecha (notorio
+   en el drawer móvil del navbar, donde el ícono de "Productos" se salía del
+   panel). */
 ul,
 ol {
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 /* Sin preflight, los controles de formulario NO heredan el font-family del

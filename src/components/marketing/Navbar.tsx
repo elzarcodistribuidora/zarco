@@ -185,7 +185,7 @@ export default function Navbar() {
         }`}
       />
       <div
-        className={`fixed top-0 right-0 z-[2001] flex h-screen w-[74%] max-w-[320px] flex-col overflow-y-auto rounded-l-[28px] border-l border-white/10 bg-brand-navy-light/95 px-7 pt-[70px] pb-10 shadow-[-16px_0_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-transform duration-300 ease-out will-change-transform lg:hidden ${
+        className={`fixed top-0 right-0 z-[2001] box-border flex h-screen w-[74%] max-w-[320px] flex-col overflow-x-hidden overflow-y-auto rounded-l-[28px] border-l border-white/10 bg-brand-navy-light/95 px-6 pt-[70px] pb-10 shadow-[-16px_0_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-transform duration-300 ease-out will-change-transform lg:hidden ${
           drawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -212,7 +212,7 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setDrawerOpen(false)}
-              className="flex w-full items-center justify-between py-4 text-lg font-bold tracking-[2px] text-white uppercase"
+              className="flex w-full items-center justify-between gap-3 py-4 text-base font-bold tracking-[1px] text-white uppercase"
             >
               Inicio
             </Link>
@@ -220,15 +220,15 @@ export default function Navbar() {
           <li className="border-b border-white/5">
             <button
               onClick={() => setProductsOpen((v) => !v)}
-              className="flex w-full items-center justify-between py-4 text-lg font-bold tracking-[2px] text-white uppercase"
+              className="flex w-full items-center justify-between gap-3 py-4 text-base font-bold tracking-[1px] text-white uppercase"
             >
-              Productos
+              <span className="min-w-0">Productos</span>
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
-                className={`h-5 w-5 text-white/50 transition-transform ${productsOpen ? "rotate-180 text-brand-red" : ""}`}
+                className={`h-5 w-5 shrink-0 text-white/50 transition-transform ${productsOpen ? "rotate-180 text-brand-red" : ""}`}
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -254,7 +254,7 @@ export default function Navbar() {
               <Link
                 href={l.href}
                 onClick={() => setDrawerOpen(false)}
-                className="flex w-full items-center justify-between py-4 text-lg font-bold tracking-[2px] text-white uppercase"
+                className="flex w-full items-center justify-between gap-3 py-4 text-base font-bold tracking-[1px] text-white uppercase"
               >
                 {l.label}
               </Link>

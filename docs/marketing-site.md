@@ -401,6 +401,30 @@ código porque quedaban apilados uno sobre otro con el mismo z-index.
   pasó de caja con borde a subrayado simple (clase `.tb-textarea`, foco en
   azul). Hints de teclado junto a la navegación (`Presiona ↵ o ↓`,
   `Presiona 1–4`), ocultos en móvil.
+- **Ingredientes (`trayData.ts`) reemplazados por catálogo real (jul 2026)**:
+  la lista de quesos/carnes frías/acompañamientos era **ficticia** —
+  productos que El Zarco no distribuye (Prosciutto di Parma, Bresaola,
+  Coppa Italiana, Gruyère suizo, uvas/fresas/higos frescos, hummus). Se
+  consultó la tabla `productos` real vía REST (Lacteos/Embutidos/Abarrotes,
+  `web=true`) y se reconstruyeron las 3 listas 1:1 con lo que sí se vende:
+  quesos (Brie/Camembert Danés, Gouda La Villita, Manchego El Zarco,
+  Parmesano Regianito, Grana Padano, Gruyere Maasdam Holandés, Cheddar
+  Navarro, Azul Vikingo, Roquefort Rosenborg, cabra, Provolone Toscana,
+  Oaxaca/Panela El Zarco), carnes frías (Jamón Serrano tipo Prosciutto
+  Parma, Jamón Serrano Tangamanga, Salami Calabrese/Ungaro, Peperoni El
+  Mexicano, Chorizo Español Bremen, Chistorra Bremen, Pechuga Pavo Ahumada
+  /Tocino/Lomo Ahumado Bernina, Roast Beef Tangamanga, Mortadela Kir,
+  Pierna Selva Negra Tangamanga) y acompañamientos (mermeladas Rica Frut,
+  miel de agave, paté Zwan, aceitunas, nueces/almendra/pistache/nuez de la
+  India/nuez garapiñada, dátil, higos cristalizados, arándanos
+  deshidratados, cacahuates, galletas pretzel, pan integral — sin fruta
+  fresca ni crackers artesanales porque El Zarco no maneja perecederos de
+  ese tipo). El campo `origin` de cada `Ingredient` ahora muestra la
+  **marca real** del producto (p. ej. "Bernina", "Tangamanga", "El Zarco")
+  en vez de un país inventado — solo se dejó un país cuando el nombre real
+  del producto lo dice explícitamente (p. ej. "Brie Danés" → Dinamarca).
+  `TrayBuilder.tsx` no cambió — solo consume `name`/`origin`/`category` de
+  `trayData.ts`, así que el rediseño no tocó lógica del componente.
 
 ## `/perfil`
 
@@ -538,6 +562,32 @@ Productos" en la siguiente sección.)**
   (logo + GIF, la que de verdad necesitaba la protección contra el
   temblor horizontal), dejando la barra de links —dueña del dropdown— sin
   ningún `overflow` propio.
+- **Bug real (2da vuelta): la flecha de "Productos" del drawer móvil se veía
+  cortada y todo el texto quedaba corrido hacia la derecha**, con scroll
+  horizontal dentro del propio panel. Dos causas, ambas por no cargar el
+  preflight de Tailwind (ver arriba):
+  1. `<ul>` conserva su `padding-inline-start: 40px` nativo del navegador —
+     el reset existente solo le quitaba las viñetas (`list-style: none`), no
+     el padding. Cualquier `<ul>` con `w-full`/flex quedaba efectivamente
+     40px más angosto de lo que su contenedor esperaba, empujando todo el
+     contenido (texto + ícono del chevron) hacia la derecha. Se agregó
+     `margin: 0; padding: 0;` a la regla `ul, ol` que ya existía en
+     `marketing-tailwind.css` (mismo patrón puntual del proyecto).
+  2. El propio panel del drawer usa `box-sizing: content-box` (valor por
+     defecto sin preflight) combinado con `px-6` — bajo `content-box` el
+     padding **se suma** al ancho declarado (`w-[74%] max-w-[320px]`) en vez
+     de restarle espacio al contenido, así que el panel terminaba más ancho
+     de lo previsto (comiéndose el "espacio a la izquierda" del rediseño de
+     arriba) y su contenido interno se desbordaba por la derecha. Se agregó
+     la utilidad `box-border` (`box-sizing: border-box`) al contenedor del
+     drawer en ambos navbars — ahí sí tenía sentido resolverlo puntual en el
+     componente (no globalmente) porque es el único lugar del sitio que
+     combina ancho fijo + padding + una posición `fixed` anclada a un borde
+     de la pantalla, donde el error se nota de inmediato.
+
+  Verificado con Playwright (viewport 390×844): `scrollWidth === clientWidth`
+  del panel del drawer en `/` y `/delicatessen` (cero desbordamiento), y la
+  flecha del chevron visible completa junto al texto "PRODUCTOS".
 
 Verificado con Playwright (`chromium`, hover sobre "Productos" en escritorio
 1440×900, apertura del drawer en 390×844) en `/` y `/delicatessen`: el
