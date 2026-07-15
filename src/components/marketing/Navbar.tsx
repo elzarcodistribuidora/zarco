@@ -60,12 +60,12 @@ export default function Navbar() {
     <>
       <header
         ref={headerRef}
-        className={`fixed top-0 z-[2000] w-full overflow-x-hidden font-[Inter,sans-serif] shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-transform duration-300 ${
+        className={`fixed top-0 z-[2000] w-full font-[Inter,sans-serif] shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-transform duration-300 ${
           hidden ? "-translate-y-full" : "translate-y-0"
         }`}
       >
         <div
-          className={`bg-brand-navy-light transition-[padding] duration-300 ${scrolled ? "py-2.5" : "py-5"}`}
+          className={`bg-brand-navy-light overflow-x-hidden transition-[padding] duration-300 ${scrolled ? "py-2.5" : "py-5"}`}
         >
           <div className="bg-brand-navy-light mx-auto grid w-[90%] max-w-[1200px] grid-cols-1 items-center gap-2 lg:grid-cols-[1fr_auto_1fr]">
             <div className="hidden justify-self-start lg:block">

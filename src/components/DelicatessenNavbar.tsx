@@ -61,13 +61,13 @@ export default function DelicatessenNavbar() {
     <>
       <header
         ref={headerRef}
-        className={`fixed top-0 z-[2000] w-full overflow-x-hidden font-[Inter,sans-serif] shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-transform duration-300 ${
+        className={`fixed top-0 z-[2000] w-full font-[Inter,sans-serif] shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-transform duration-300 ${
           hidden ? "-translate-y-full" : "translate-y-0"
         }`}
       >
         <div
           style={{ backgroundColor: BG_TOP }}
-          className={`transition-[padding] duration-300 ${scrolled ? "py-2.5" : "py-5"}`}
+          className={`overflow-x-hidden transition-[padding] duration-300 ${scrolled ? "py-2.5" : "py-5"}`}
         >
           <div
             style={{ backgroundColor: BG_TOP }}
