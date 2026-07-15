@@ -61,7 +61,7 @@ export default function DelicatessenNavbar() {
     <>
       <header
         ref={headerRef}
-        className={`fixed top-0 z-[2000] w-full font-[Inter,sans-serif] shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-transform duration-300 ${
+        className={`fixed top-0 z-[2000] w-full overflow-x-hidden font-[Inter,sans-serif] shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-transform duration-300 ${
           hidden ? "-translate-y-full" : "translate-y-0"
         }`}
       >

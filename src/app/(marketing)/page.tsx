@@ -118,12 +118,12 @@ export default function HomePage() {
               </p>
             </div>
           </Reveal>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="-mx-[5%] flex snap-x snap-mandatory gap-6 overflow-x-auto px-[5%] pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden">
             {SECTOR_CARDS.map((c) => (
-              <Reveal key={c.href}>
+              <Reveal key={c.href} className="w-[78%] shrink-0 snap-start md:w-auto md:shrink">
                 <Link
                   href={c.href}
-                  className="group relative flex h-[500px] flex-col justify-end overflow-hidden rounded-xl p-8 text-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] transition-[transform,box-shadow] duration-500 hover:-translate-y-2.5 hover:shadow-[0_20px_40px_rgba(10,34,64,0.15)]"
+                  className="group relative flex h-[380px] flex-col justify-end overflow-hidden rounded-xl p-8 text-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] transition-[transform,box-shadow] duration-500 hover:-translate-y-2.5 hover:shadow-[0_20px_40px_rgba(10,34,64,0.15)] md:h-[500px]"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -160,9 +160,9 @@ export default function HomePage() {
               </p>
             </div>
           </Reveal>
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          <div className="-mx-[5%] flex snap-x snap-mandatory gap-8 overflow-x-auto px-[5%] pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
             {PRODUCT_CATS.map((c) => (
-              <Reveal key={c.href}>
+              <Reveal key={c.href} className="w-[60%] shrink-0 snap-start sm:w-auto sm:shrink">
                 <Link href={c.href} className="group flex flex-col items-center gap-2 text-center">
                   <div className="flex w-full items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -217,9 +217,12 @@ export default function HomePage() {
             </h2>
           </Reveal>
           <Reveal>
-            <div className="mx-auto grid w-[90%] max-w-[1400px] grid-cols-2 gap-[30px] sm:grid-cols-4">
+            <div className="mx-auto flex w-[90%] max-w-[1400px] snap-x snap-mandatory gap-[30px] overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-4 sm:overflow-visible sm:pb-0 [&::-webkit-scrollbar]:hidden">
               {BRAND_LOGOS.map((b) => (
-                <div key={b.src} className="flex items-center justify-center">
+                <div
+                  key={b.src}
+                  className="flex w-[62%] shrink-0 snap-start items-center justify-center sm:w-auto sm:shrink"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={b.src}

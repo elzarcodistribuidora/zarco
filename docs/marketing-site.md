@@ -465,6 +465,38 @@ proyecto) recorriendo las 15 páginas públicas más `/delicatessen/arma-tu-char
 y `/portal/login` en viewport móvil: ninguna quedó con `scrollWidth` mayor al
 viewport tras el fix.
 
+### Home: 3 secciones a carrusel horizontal solo en móvil (jul 2026)
+
+"Nuestras Líneas de Negocio" (`SECTOR_CARDS`), "Familias de Productos"
+(`PRODUCT_CATS`) y "Líderes Que Confían en Nuestra Red" (`BRAND_LOGOS`), las
+tres en `(marketing)/page.tsx`, eran un `grid` normal (columna única en
+móvil, apilado vertical). Se pidió que en móvil fueran carrusel horizontal
+con **peek** — la primera tarjeta/logo se ve completo y el segundo se ve
+cortado, para que se note que hay más sin necesidad de una flecha o dot
+indicador. Patrón aplicado a los tres (mismo que ya usaba `ProductCarousel.tsx`
+para los carruseles de `SectorPage`): en el contenedor,
+`flex snap-x snap-mandatory gap-* overflow-x-auto` + scrollbar oculta
+(`[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`)
+que revierte a `grid` normal en el breakpoint donde antes empezaba el grid
+(`md:grid md:grid-cols-3` para sectores, `sm:grid sm:grid-cols-3` para
+familias, `sm:grid sm:grid-cols-4` para líderes) — en desktop se ve exactamente
+igual que antes, sin scroll. Cada item hijo lleva `w-[N%] shrink-0 snap-start`
+en móvil (revertido a `w-auto shrink` en el breakpoint de grid): `78%` para
+las tarjetas de sector (con `h-[380px]` en vez de `h-[500px]` fijo, para que
+no queden desproporcionadas de angostas-y-altas), `60%` para las familias de
+producto, `62%` para los logos de marca — todos calibrados a mano viendo el
+screenshot hasta que el segundo elemento quedara visiblemente cortado (un
+45% en los logos, por ejemplo, mostraba los dos completos sin transmitir
+"hay más"). El contenedor usa `-mx-[5%] ... px-[5%]` (donde la sección ya
+vivía en un `w-[90%]` centrado) para que el scroll no quede limitado por el
+padding del propio contenedor.
+
+De paso, `Navbar.tsx`/`DelicatessenNavbar.tsx` ganaron `overflow-x-hidden` en
+el `<header>` (dueño real del contenido de la barra — el drawer/overlay móvil
+son hermanos fuera de `<header>`, así que esto no los afecta) como red de
+seguridad para que la barra nunca se sienta "temblorosa" horizontalmente en
+pantallas angostas.
+
 ## Páginas migradas (referencia)
 
 `/`, `/aviso-de-privacidad`, `/terminos-del-servicio`, `/cremeria`,
