@@ -495,7 +495,72 @@ De paso, `Navbar.tsx`/`DelicatessenNavbar.tsx` ganaron `overflow-x-hidden` en
 el `<header>` (dueño real del contenido de la barra — el drawer/overlay móvil
 son hermanos fuera de `<header>`, así que esto no los afecta) como red de
 seguridad para que la barra nunca se sienta "temblorosa" horizontalmente en
-pantallas angostas.
+pantallas angostas. **(Corregido más abajo — este `overflow-x-hidden` en el
+`<header>` completo resultó tener un efecto secundario real: ver "Dropdown de
+Productos" en la siguiente sección.)**
+
+## Drawer móvil rediseñado + 2 bugs reales más (jul 2026)
+
+- **Drawer del menú móvil animaba `right` en vez de `transform`**: tanto
+  `Navbar.tsx` como `DelicatessenNavbar.tsx` abrían/cerraban el drawer
+  animando la propiedad CSS `right` (`transition-[right]`, `right-0` /
+  `-right-full`). Animar `right` obliga al navegador a recalcular layout en
+  cada frame (no lo acelera el compositor), así que el drawer se sentía
+  tembloroso/lento en vez de deslizarse suave. Se cambió a animar
+  `transform: translateX` (`right-0` fijo siempre + `translate-x-0` /
+  `translate-x-full`), que sí corre en el compositor/GPU — mismo efecto
+  visual, mucho más fluido.
+- **Drawer rediseñado para no tapar toda la pantalla ("más pro")**: pasó de
+  `w-[85%] max-w-[380px]` (prácticamente pantalla completa en móviles
+  angostos) a `w-[74%] max-w-[320px]` con `rounded-l-[28px]` en el borde
+  izquierdo — dejando ver claramente el overlay oscuro de fondo a la
+  izquierda, como un panel flotante en vez de una pantalla completa que
+  reemplaza el contenido.
+- **`DelicatessenNavbar.tsx`: "Inicio" del menú móvil no volvía al home
+  real**: el ítem "Inicio" del drawer apuntaba a `/delicatessen` (el mismo
+  logo ya enlaza ahí), mientras que en escritorio ese mismo link ("Inicio" de
+  `MAIN_LINKS`) apunta a `/` — inconsistencia que hacía sentir que "Inicio"
+  no hacía nada si ya estabas en `/delicatessen`. Se corrigió el mobile para
+  que apunte a `/`, igual que en escritorio.
+- **Bug real: el dropdown de "Productos" dejó de verse en escritorio**
+  (regresión de la sesión anterior, causada por el `overflow-x-hidden` del
+  `<header>` mencionado arriba). El dropdown de "Productos" se posiciona
+  `absolute` sobresaliendo por debajo de la barra de links, dentro del mismo
+  `<header>`. La regla CSS de overflow tiene un comportamiento poco conocido:
+  si defines `overflow-x` distinto de `visible` y dejas `overflow-y` en su
+  valor por defecto (`visible`), el navegador **fuerza el valor computado de
+  `overflow-y` a `auto`** (no se puede evitar ni fijando `overflow-y-visible`
+  explícitamente — es una regla del spec de CSS Overflow, no un problema de
+  cascada/especificidad). Con `overflow-y: auto` en el `<header>` (que solo
+  mide lo alto de sus dos barras, no toda la pantalla), cualquier cosa que
+  sobresalga verticalmente —como el dropdown— queda recortada e invisible.
+  Se corrigió moviendo el `overflow-x-hidden` **solo** a la barra superior
+  (logo + GIF, la que de verdad necesitaba la protección contra el
+  temblor horizontal), dejando la barra de links —dueña del dropdown— sin
+  ningún `overflow` propio.
+
+Verificado con Playwright (`chromium`, hover sobre "Productos" en escritorio
+1440×900, apertura del drawer en 390×844) en `/` y `/delicatessen`: el
+dropdown se ve completo, el drawer deja espacio a la izquierda, y el
+`scrollWidth` de ambas páginas sigue sin exceder el viewport en móvil.
+
+### Banner móvil de `/delicatessen/arma-tu-charola` actualizado (jul 2026)
+
+Se reemplazó `public/banners/charolas-movil.png` (1080×300) por una imagen
+nueva (1080×600) provista por el usuario. El `<picture>` que sirve este
+banner (`arma-tu-charola/page.tsx`) usa `<img className="block w-full">`, así
+que el nuevo aspecto más alto se acomoda solo sin reintroducir el bug de
+padding/scroll horizontal que tuvo este mismo banner antes (ver más abajo).
+
+### Flechas de navegación de `TrayBuilder.tsx` tapadas por el botón de WhatsApp (jul 2026)
+
+En móvil, `.tb-nav-container` (las flechas ‹ › para retroceder/avanzar de
+paso) quedaba en `bottom: 24px; right: 16px` — la misma esquina donde vive el
+botón flotante de WhatsApp del footer (`z-[9999]`, por encima de las flechas
+que son `z-index: 9000`), tapándolas parcialmente. Mismo patrón de bug que ya
+se había corregido en el carrito de `/catalogo` (ver arriba): se centraron
+las flechas abajo (`left: 50%; transform: translateX(-50%)`) en vez de
+dejarlas en la esquina.
 
 ## Páginas migradas (referencia)
 

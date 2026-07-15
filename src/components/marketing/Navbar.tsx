@@ -185,7 +185,7 @@ export default function Navbar() {
         }`}
       />
       <div
-        className={`fixed top-0 right-0 z-[2001] flex h-screen w-[85%] max-w-[380px] flex-col overflow-y-auto border-l border-white/10 bg-brand-navy-light/95 px-8 pt-[70px] pb-10 shadow-[-10px_0_30px_rgba(0,0,0,0.4)] backdrop-blur-2xl transition-transform duration-300 ease-out will-change-transform lg:hidden ${
+        className={`fixed top-0 right-0 z-[2001] flex h-screen w-[74%] max-w-[320px] flex-col overflow-y-auto rounded-l-[28px] border-l border-white/10 bg-brand-navy-light/95 px-7 pt-[70px] pb-10 shadow-[-16px_0_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-transform duration-300 ease-out will-change-transform lg:hidden ${
           drawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
