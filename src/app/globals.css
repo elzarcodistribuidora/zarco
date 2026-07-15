@@ -10,6 +10,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Colores de marca El Zarco (usados en navbar/footer/páginas públicas) */
+  --color-brand-navy: #0a2240;
+  --color-brand-navy-light: #16365c;
+  --color-brand-red: #a81200;
+  --color-brand-red-dark: #7a0a00;
+  --color-brand-green: #25d366;
 }
 
 @media (prefers-color-scheme: dark) {

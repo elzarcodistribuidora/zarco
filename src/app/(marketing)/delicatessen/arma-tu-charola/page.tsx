@@ -1,23 +1,7 @@
 import type { Metadata } from "next";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import DelicatessenNavbar from "@/components/DelicatessenNavbar";
 import DelicatessenFooter from "@/components/DelicatessenFooter";
 import TrayBuilder from "@/components/charolas/TrayBuilder";
-import PageScripts from "../../PageScripts";
-
-const WEBFLOW_DIR = join(process.cwd(), "src/webflow");
-
-async function loadWebflowData() {
-  try {
-    const page = JSON.parse(
-      await readFile(join(WEBFLOW_DIR, "delicatessen.json"), "utf8")
-    );
-    return { css: page.css as string, js: (page.js as string[]) ?? [] };
-  } catch {
-    return { css: "", js: [] };
-  }
-}
 
 export const metadata: Metadata = {
   title: "Arma tu Charola | El Zarco Delicatessen",
@@ -25,13 +9,10 @@ export const metadata: Metadata = {
     "Diseña tu propia charola de quesos y carnes frías. Selecciona tus ingredientes favoritos y personaliza tu tabla para tu evento.",
 };
 
-export default async function ArmaTuCharolaPage() {
-  const { css, js } = await loadWebflowData();
-
+export default function ArmaTuCharolaPage() {
   return (
     <>
       <DelicatessenNavbar />
-      {css && <style dangerouslySetInnerHTML={{ __html: css }} />}
       {/* Scoped reset: neutralizes Webflow global rules ONLY inside the builder */}
       <style dangerouslySetInnerHTML={{ __html: `
         #charola-builder, #charola-builder * {
@@ -72,7 +53,9 @@ export default async function ArmaTuCharolaPage() {
         width: '100%',
         maxWidth: '1400px',
         margin: '0 auto',
-        padding: '140px 5% 0',
+        paddingTop: 'var(--navbar-h)',
+        paddingLeft: '5%',
+        paddingRight: '5%',
       }}>
         <picture>
           <source media="(max-width: 768px)" srcSet="/banners/charolas-movil.png" />
@@ -92,7 +75,6 @@ export default async function ArmaTuCharolaPage() {
       <main id="charola-builder">
         <TrayBuilder />
       </main>
-      <PageScripts js={js} />
       <DelicatessenFooter />
     </>
   );

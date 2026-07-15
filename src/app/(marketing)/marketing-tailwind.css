@@ -1,0 +1,90 @@
+/* Utilidades de Tailwind SIN preflight: las páginas de (marketing) que
+   todavía son HTML de Webflow (marketing.css / webflow-shared.css) no deben
+   recibir el reset global de Tailwind. Solo las páginas ya migradas a JSX
+   usan estas clases utilitarias. */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+
+@theme inline {
+  --color-brand-navy: #0a2240;
+  --color-brand-navy-light: #16365c;
+  --color-brand-red: #a81200;
+  --color-brand-red-dark: #7a0a00;
+  --color-brand-green: #25d366;
+}
+
+/* Sin preflight, <body> conserva el margin:8px por defecto del navegador —
+   se ve como un marco blanco alrededor de TODA la página (banners, navbar,
+   todo), en todas las páginas por igual. Esto era lo que realmente causaba
+   la línea/espacio blanco reportado, no el ancho de los banners. */
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Tampoco hay un font-family por defecto sin preflight: el body caía en la
+   fuente serif del navegador salvo que cada componente la fijara a mano.
+   Inter (cargada en el layout) es la tipografía del sitio, se fija una vez
+   aquí para que todo el texto la herede sin tener que repetirla. */
+body {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Sin preflight no hay reset de <a>: el navegador subraya los links por
+   defecto. Ya no quedan páginas Webflow crudas en (marketing) que dependan
+   del comportamiento nativo, así que este reset es seguro para todo el grupo. */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Mismo caso: sin preflight, <button> conserva el fondo/borde nativo del
+   navegador (se nota como un recuadro claro detrás del texto). */
+button {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Mismo caso: <ul>/<li> traen viñetas nativas (list-style: disc) sin preflight. */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Sin preflight, los controles de formulario NO heredan el font-family del
+   body (comportamiento histórico del UA stylesheet) — <textarea> en Chrome
+   cae en una fuente monoespaciada por defecto, muy notorio en el form de
+   /contacto. Tampoco se resetea el borde/outline/appearance nativos
+   (recuadro oscuro visible sobre todo al enfocar, notorio en el buscador de
+   /catalogo) — cada campo ya define su propio border/ring con clases de
+   Tailwind, así que aquí se resetea una sola vez el estilo nativo del UA
+   stylesheet. */
+input,
+textarea,
+select {
+  font-family: inherit;
+  appearance: none;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: none;
+}
+
+/* Altura real del navbar fijo, medida por Navbar.tsx (ResizeObserver) y
+   publicada aquí como variable — así el <main> de cada página compensa el
+   espacio exacto (`pt-[var(--navbar-h)]`) sin pixeles adivinados a mano.
+   Este valor es solo el fallback antes de que el JS mida (primer paint). */
+:root {
+  --navbar-h: 140px;
+}
+@media (min-width: 1024px) {
+  :root {
+    --navbar-h: 163px;
+  }
+}

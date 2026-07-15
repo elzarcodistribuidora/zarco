@@ -61,12 +61,17 @@ export default function CatalogRecs() {
         .zr-track{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin;-webkit-overflow-scrolling:touch;}
         .zr-track::-webkit-scrollbar{height:6px;}
         .zr-track::-webkit-scrollbar-thumb{background:rgba(10,34,64,.2);border-radius:3px;}
-        .zr-card{flex:0 0 150px;width:150px;box-sizing:border-box;background:#fff;border:1px solid rgba(10,34,64,.10);border-radius:14px;padding:11px 11px 12px;display:flex;flex-direction:column;gap:7px;box-shadow:0 4px 14px rgba(10,34,64,.06);}
+        .zr-card{position:relative;flex:0 0 150px;width:150px;box-sizing:border-box;background:#fff;border:1px solid rgba(10,34,64,.10);border-radius:14px;padding:11px 11px 12px;display:flex;flex-direction:column;gap:7px;box-shadow:0 4px 14px rgba(10,34,64,.06);cursor:pointer;transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;}
+        .zr-card:hover{border-color:rgba(168,18,0,.25);transform:translateY(-2px);box-shadow:0 8px 20px rgba(10,34,64,.1);}
+        .zr-card.zr-selected{border-color:rgba(26,127,70,.35);box-shadow:0 8px 20px rgba(26,127,70,.15);}
         .zr-card .zr-name{font:600 12px/1.3 Inter,system-ui,sans-serif;color:#1f2a37;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:31px;}
         .zr-card .zr-price{font:700 13px/1 Inter,system-ui,sans-serif;color:#0A2240;}
-        .zr-add{margin-top:auto;border:none;cursor:pointer;background:#0A2240;color:#fff;font:700 12px/1 Inter,system-ui,sans-serif;padding:9px 10px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s ease,transform .15s ease;}
-        .zr-add:hover{background:#A81200;transform:translateY(-1px);}
-        .zr-add.zr-done{background:#1a7f46;}
+        .zr-check{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:9999px;background:linear-gradient(135deg,#1a7f46,#22c55e);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(26,127,70,.45);opacity:0;transform:scale(.4);transition:opacity .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+        .zr-card.zr-selected .zr-check{opacity:1;transform:scale(1);}
+        .zr-add{margin-top:auto;border:none;cursor:pointer;background:#0A2240;color:#fff;font:700 12px/1 Inter,system-ui,sans-serif;padding:9px 10px;border-radius:9999px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s ease,transform .15s ease;}
+        .zr-card:hover .zr-add{background:#A81200;transform:translateY(-1px);}
+        .zr-add.zr-done{background:linear-gradient(135deg,#1a7f46,#22c55e);}
+        .zr-card:hover .zr-add.zr-done{background:linear-gradient(135deg,#1a7f46,#22c55e);transform:none;}
         #zarco-upsell{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(12px);width:min(420px,calc(100vw - 32px));z-index:2040;background:rgba(255,255,255,.98);backdrop-filter:blur(16px);border:1px solid rgba(10,34,64,.12);border-radius:18px;box-shadow:0 18px 50px rgba(5,18,38,.28);padding:14px 14px 12px;opacity:0;pointer-events:none;transition:opacity .35s cubic-bezier(.16,1,.3,1),transform .35s cubic-bezier(.16,1,.3,1);}
         #zarco-upsell.zr-show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
         #zarco-upsell .zr-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;font:700 13px/1.25 Inter,system-ui,sans-serif;color:#0A2240;padding-right:22px;}
@@ -104,22 +109,47 @@ export default function CatalogRecs() {
       if (!p) return null;
       const el = document.createElement("div");
       el.className = "zr-card";
+      el.setAttribute("role", "button");
+      el.tabIndex = 0;
+
+      const check = document.createElement("span");
+      check.className = "zr-check";
+      check.innerHTML =
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
       const name = document.createElement("div");
       name.className = "zr-name";
       name.textContent = p.name;
+
       const price = document.createElement("div");
       price.className = "zr-price";
       price.textContent = mxn.format(p.price);
+
       const btn = document.createElement("button");
       btn.className = "zr-add";
       btn.type = "button";
-      btn.textContent = "＋ Agregar";
-      btn.addEventListener("click", () => {
+      btn.tabIndex = -1;
+      btn.innerHTML = "＋ Agregar";
+
+      const select = () => {
+        if (el.dataset.added === "1") return;
+        el.dataset.added = "1";
         addRec(code);
+        el.classList.add("zr-selected");
         btn.classList.add("zr-done");
-        btn.textContent = "✓ Agregado";
+        btn.innerHTML =
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Agregado';
+      };
+
+      el.addEventListener("click", select);
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          select();
+        }
       });
-      el.append(name, price, btn);
+
+      el.append(check, name, price, btn);
       return el;
     }
 
