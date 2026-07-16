@@ -1,5 +1,27 @@
 # Mejoras ya hechas
 
+- ✅ **Auditoría de seguridad completa del backend + cierre de escalada de privilegios (jul 2026)**:
+  además del endurecimiento de rutas admin/checkout (más abajo), se encontró y
+  corrigió una **escalada de privilegios real en RLS**: la policy
+  `clientes_update_own` dejaba a cualquier cliente logueado actualizar su
+  propia fila completa (RLS no distingue por columna), así que podía
+  auto-asignarse `role = 'admin'` y entrar al panel. Se reescribió la policy
+  para exigir solo `private.is_admin()`. Se agregó `supabase/audit-rls.sql`
+  (auditoría de solo lectura, sin depender del MCP ni del CLI) y
+  `supabase/README.md` documentando que el esquema/RLS no está versionado —
+  punto ciego real que dejó pasar este hallazgo sin revisión de código. Además:
+  folios (`ZRC-`/`COT-`) reescritos en `src/lib/folio.ts` — el generador viejo
+  (`Date.now().toString().slice(-N)`) daba la vuelta cada 2.8h (o cada 10s en
+  el folio de respaldo de `ContactForm.tsx`, que se le mostraba al cliente por
+  WhatsApp aunque no existiera en la BD); `/api/cart` ahora valida forma y
+  tamaño del carrito (`normalizeCart()`) en vez de guardar el body tal cual en
+  la columna `jsonb`; `/api/revalidate` prefiere un header sobre la query
+  string para el token (comparación timing-safe); **BotID** (Vercel) protege
+  `/api/quote` contra spam automatizado; 2 reglas de **rate limiting/logging
+  en el WAF de Vercel** (`/api/quote`, y monitoreo en `/api/order`+`/api/admin`+
+  `/api/cord`); se eliminaron `@cord-sdk/react`/`server`/`types` (sin uso real
+  en el código, arrastraban una vulnerabilidad moderada de `uuid`). Detalle
+  completo en `docs/backend-supabase.md`.
 - ✅ Imágenes WebP (-92%).
 - ✅ Backend en **Supabase** (Postgres + Auth + RLS), Apps Script retirado.
 - ✅ **Panel admin** (CRUD completo: visualización, edición y **creación** de productos; gestión de clientes/pedidos/cotizaciones) — reemplaza el Sheet.

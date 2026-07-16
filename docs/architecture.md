@@ -38,10 +38,18 @@ scripts/
 ├── build-recommendations.mjs        npm run build:recs (cross-sell/upsell del catálogo)
 ├── build-favicons.mjs
 └── import-to-supabase.mjs           Importó los productos una vez (dev tool)
+supabase/
+├── README.md                        Por qué la RLS no está versionada + plan de `supabase db pull`
+├── audit-rls.sql                    Auditoría de RLS de SOLO LECTURA (pegar en el SQL Editor)
+└── fix-clientes-role-escalation.sql Fix aplicado (jul 2026) a la escalada de privilegios en `clientes`
 ```
 
 `.mcp.json` conecta el **MCP de Supabase** (proyecto `gekuyrjsehwsyorqyuxc`) para
-correr migraciones/SQL desde el editor.
+correr migraciones/SQL desde el editor. **El esquema y las policies de RLS NO
+están versionadas** (no hay `supabase/migrations/`) — viven solo en el
+dashboard de Supabase. Ver `supabase/README.md` para el porqué y el plan de
+`supabase db pull`, y `docs/backend-supabase.md` (sección "Hardening de
+superficie de ataque") para el hallazgo real que este punto ciego produjo.
 
 ## El pipeline de Webflow ya se retiró — y ya no queda nada legacy
 
