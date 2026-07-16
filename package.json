@@ -11,9 +11,6 @@
     "build:favicons": "node scripts/build-favicons.mjs"
   },
   "dependencies": {
-    "@cord-sdk/react": "^1.47.2",
-    "@cord-sdk/server": "^1.47.2",
-    "@cord-sdk/types": "^1.47.2",
     "@flouviahq/elements": "^0.6.3",
     "@gsap/react": "^2.1.2",
     "@supabase/ssr": "^0.10.3",

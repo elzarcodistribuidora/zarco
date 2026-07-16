@@ -27,22 +27,34 @@ Supabase Dashboard → SQL Editor y córrelo. Responde:
 4. Si el esquema `private` está fuera del alcance de la API.
 5. Qué funciones son `SECURITY DEFINER` y si tienen `search_path` fijo.
 
-### Sobre la pregunta 3 (escalada de privilegios)
+### Sobre la pregunta 3 (escalada de privilegios) — CONFIRMADA (jul 2026)
 
-RLS en Postgres **no tiene granularidad por columna**: si una policy deja al
-usuario actualizar su propia fila de `clientes`, también lo deja escribir
-`role`. Y `role = 'admin'` es exactamente lo que revisan
-`src/app/admin/layout.tsx` y `src/lib/supabase/require-admin.ts`.
+La auditoría encontró la policy `clientes_update_own` con:
 
-Si el script muestra una policy de UPDATE sobre `clientes` para
-`authenticated`, hay dos arreglos posibles:
+```
+using_expr = check_expr = (auth_user_id = auth.uid()) OR private.is_admin()
+```
 
-- **El más simple:** no dejar que los clientes actualicen su fila. Hoy nada en
-  la app lo necesita — `role`/`estatus`/`nivel` solo los edita el admin desde
-  `/admin/clientes`, y ese flujo usa la sesión del admin.
-- **Si en el futuro hace falta** que el cliente edite su perfil: revocar el
-  privilegio de columna (`revoke update (role, estatus, nivel) on clientes from
-  authenticated`), porque los GRANT de columna sí se aplican por encima de RLS.
+RLS en Postgres **no tiene granularidad por columna**: esa policy deja a
+cualquier usuario autenticado actualizar su propia fila completa, `role`
+incluido. Y `role = 'admin'` es exactamente lo que revisan
+`src/app/admin/layout.tsx` y `src/lib/supabase/require-admin.ts` — cualquier
+cliente logueado podía correr
+`update clientes set role = 'admin' where auth_user_id = auth.uid()` y entrar
+al panel admin.
+
+**Fix, en `fix-clientes-role-escalation.sql`:** como ningún flujo de cliente
+(fuera de `/admin`) escribe esta tabla — se verificó por grep, solo se lee
+`clientes` desde `/api/*` — la policy no necesita distinguir "admin edita
+cualquiera" de "cliente edita lo suyo". Se quita la rama
+`auth_user_id = auth.uid()` y queda solo `private.is_admin()`.
+
+⚠️ Una primera versión de este fix proponía `revoke update (role, estatus,
+nivel) on clientes from authenticated`. Es **incorrecto**: Supabase no tiene un
+rol de Postgres por usuario — todos los usuarios logueados, incluido el admin,
+comparten el rol `authenticated` (RLS distingue por `auth.uid()`, no por rol de
+Postgres). Ese REVOKE habría bloqueado también al admin real al editar
+clientes desde `/admin/clientes`.
 
 ## Poner el esquema bajo control de versiones
 
