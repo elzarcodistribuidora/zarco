@@ -57,4 +57,39 @@
 - ✅ **Banners móviles de Cafeterías, Restaurantes y Tiendas actualizados (jul 2026)**: se reemplazaron `banner_cafeterias_movil.webp`, `banner_restaurantes_movil.webp` y `banner_tiendas_movil.webp` con imágenes nuevas provistas por el usuario (convertidas de PNG a WebP con `sharp`, misma resolución 1080×596).
 - ✅ **Ingredientes de "Arma tu Charola" sin marca comercial + aviso de scroll en escritorio (jul 2026)**: `trayData.ts` pasó de nombres con marca ("Manchego El Zarco", "Jamón Serrano Tangamanga") a nombres genéricos de tipo de producto (Brie, Manchego, Jamón Serrano, Prosciutto), con el campo `origin` mostrando país/estilo en vez de marca — más un puñado de clásicos de charola comunes y fáciles de conseguir que hoy no están en catálogo (uvas/fresas frescas, aceitunas negras, Bresaola), a propósito sobre todo en carnes frías/frutas/aceitunas. También se agregó una píldora "Desliza para armar tu charola" superpuesta en el banner de intro, visible solo en escritorio (en móvil el formulario ya es visible sin aviso tras el fix de espaciado banner/intro de esta misma sesión).
 - ✅ **Pedido mínimo de 5 charolas en "Arma tu Charola" (jul 2026)**: `TrayBuilder.tsx` suma un contador de número de charolas (mínimo 5, con stepper que no permite bajar de ahí) visible en el paso de tamaño y en el resumen final, con avisos "Pedido mínimo: 5 charolas" en intro/tamaño/resumen. El gramaje de cada ingrediente se sigue definiendo por charola, pero el resumen y el mensaje de WhatsApp ahora muestran el **total** (gramaje por charola × número de charolas), recalculado en vivo al ajustar cualquiera de los dos valores.
+- ✅ **Endurecimiento de seguridad en rutas admin y checkout (jul 2026)**: se
+  encontraron y corrigieron 4 huecos reales en rutas `/api/*` — ninguno
+  cubierto por `proxy.ts`, que **solo protege páginas bajo `/admin`**, no las
+  rutas de API que esas páginas llaman.
+  - **`/api/order` confiaba en el total que mandaba el cliente**
+    (`body.total`), así que cualquiera podía interceptar el request y mandar
+    un pedido con el carrito lleno cotizado en $0.01. Ahora el servidor
+    siempre cotiza el total contra `productos.precio_final` (snapshot al
+    momento del pedido); el cliente solo manda `items` estructurados
+    (código/nombre/cantidad, con límites `MAX_ITEMS`/`MAX_CANTIDAD`) en vez
+    del `total`. `CatalogApp.tsx` se actualizó para mandar `items` en el
+    checkout.
+  - **`/api/admin/sync-prices` (carga masiva de precios por CSV) solo
+    comprobaba que hubiera sesión, no que fuera admin** — como el registro es
+    abierto, cualquier cliente logueado podía sobrescribir el precio de todo
+    el catálogo. También validaba de más: un `UPDATE` que no afectaba
+    ninguna fila (código inexistente, RLS bloqueando) no devolvía error y se
+    contaba como éxito silencioso; ahora usa `.select()` para confirmar qué
+    filas se escribieron de verdad y el CSV uploader (`UploadPricesCSV.tsx`)
+    reporta cuántas fallaron.
+  - **`/api/cord/create` no tenía NINGÚN control de acceso** — gasta
+    `CORD_SECRET_KEY` contra la API de pago de Flouvia, así que cualquiera en
+    internet podía generar cotizaciones ilimitadas a nombre del negocio.
+  - **`/api/admin/export` (CSV de productos/clientes/pedidos) era vulnerable
+    a inyección de fórmulas**: varias columnas exportadas son texto libre del
+    usuario (`pedidos.resumen`, nombre del perfil de Google), y Excel/Sheets
+    ejecutan cualquier celda que empiece con `=`/`+`/`-`/`@` al abrir el
+    archivo — un cliente podía plantar `=HYPERLINK(...)` en un pedido y
+    dispararlo en la máquina del admin al abrir el export.
+  - Se creó `src/lib/supabase/require-admin.ts` (`requireAdmin()`) como guard
+    compartido para que las rutas `/api/admin/*` y `/api/cord/create` no
+    reimplementen el chequeo de sesión+rol a mano; `admin/actions.ts`
+    conserva su propio `requireAdmin()` basado en `throw` porque ahí conviene
+    el flujo de excepciones + `ActionState`.
+- ✅ **Cross-sell/upsell del catálogo: cobertura y datos frescos (jul 2026)**: auditando la tabla `recomendaciones` directo en Supabase se encontró que estaba **desactualizada** respecto al catálogo activo — 72 filas con el producto origen ya desactivado y 241 filas que recomendaban productos que ya no están `web=true` (ambos casos, invisibles para el usuario porque `CatalogRecs.tsx` filtra contra el inventario activo, pero desperdiciaban espacio de recomendación). Además, **79 de 721 productos activos (11%) no tenían ningún arquetipo asignado** en `scripts/recs-config.mjs` — sobre todo Abarrotes (aceites, aceitunas, especias, frutos secos, congelados, enlatados, granos) y algunos Embutidos (chicharrón, chuletón, chistorra, carne para hamburguesa, pizza individual) — así que nunca generaban cross-sell ("complemento") y solo a veces caían en similares por categoría. Se amplió el clasificador con ~15 arquetipos nuevos y keywords adicionales a los existentes, y se corrió `npm run build:recs`: cobertura subió a 716/721 (los 5 restantes son insumos no alimenticios — cubetas, desechables, plástico, limpieza — donde forzar una pareja de "combina bien con…" sería incoherente, así que se dejaron sin arquetipo a propósito) y las filas huérfanas quedaron en cero. Verificado end-to-end con Playwright contra el catálogo real: agregar "Carne para Hamburguesa" dispara el popover "Combina bien con…" (pan, queso mozzarella, mayonesa, mostaza) y el strip "Completa tu pedido" del carrito muestra las 8 sugerencias completas (+ salsa inglesa, tocino, pan de hot dog, queso canasto) — pareja coherente con el producto seleccionado. **Nota operativa descubierta en el proceso**: tras correr `build:recs` hay que pegarle a `/api/revalidate` (o esperar los 5 min del ISR) para que `/api/inventory` dej de servir las recomendaciones viejas desde el cache de `unstable_cache` — sin eso el catálogo en vivo sigue mostrando las recs anteriores aunque la tabla ya se haya actualizado.
 - ✅ **2 bugs reales más en el drawer móvil: flecha de "Productos" cortada y contenido corrido a la derecha (jul 2026)**: ambos por no cargar el preflight de Tailwind. (1) `<ul>` conservaba su `padding-inline-start: 40px` nativo del navegador — el reset existente solo le quitaba las viñetas, no el padding, así que cualquier `<ul>` con `w-full` quedaba 40px más angosto de lo esperado y empujaba el contenido a la derecha; se agregó `margin: 0; padding: 0;` a la regla `ul, ol` de `marketing-tailwind.css`. (2) el panel del drawer usa `box-sizing: content-box` por defecto (sin preflight), y combinado con su padding horizontal (`px-6`) el padding se sumaba al ancho declarado en vez de restarle espacio — el panel terminaba más ancho de lo previsto (comiéndose el espacio a la izquierda del rediseño anterior) y su contenido se desbordaba; se agregó `box-border` al contenedor del drawer en ambos navbars. Verificado con Playwright: `scrollWidth === clientWidth` del panel en `/` y `/delicatessen`, cero desbordamiento.

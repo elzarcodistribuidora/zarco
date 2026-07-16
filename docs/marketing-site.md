@@ -201,9 +201,11 @@ rediseñó por partes, todo dentro de `CatalogApp.tsx`:
   que `CatalogApp.tsx` conserva a propósito. Cada tarjeta de recomendación
   (`.zr-card`) es clickeable completa (no solo el botón) y marca un badge de
   palomita al agregarse.
-- Checkout: arma el mensaje de WhatsApp, hace `POST /api/order` (requiere
-  sesión — si no hay, dispara el login), y abre `wa.me` con el resumen y el
-  folio.
+- Checkout: arma el mensaje de WhatsApp, hace `POST /api/order` mandando
+  `items` estructurados (código/nombre/cantidad — el **total lo cotiza el
+  servidor** contra el precio real en BD, nunca el cliente, ver
+  `docs/backend-supabase.md`) (requiere sesión — si no hay, dispara el
+  login), y abre `wa.me` con el resumen y el folio.
 - Mientras carga el inventario, la tabla muestra filas skeleton animadas
   (`CatalogApp.tsx`) en vez de un preloader de página completa — se borró
   `Preloader.tsx`/`preloader.css`, que antes se montaba en `catalogo/page.tsx`.

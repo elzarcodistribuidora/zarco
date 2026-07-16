@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withBotId } from "botid/next/config";
 
 const nextConfig: NextConfig = {
   async rewrites() {
@@ -11,4 +12,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// BotID necesita sus propios rewrites de proxy para que el script de detección
+// se sirva desde nuestro dominio (ver src/instrumentation-client.ts).
+export default withBotId(nextConfig);

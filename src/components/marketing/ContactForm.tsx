@@ -67,7 +67,14 @@ export default function ContactForm() {
     setSending(true);
 
     const resumen = `[COTIZACIÓN / ${zone}] ${mensaje}`;
-    let folio = `COT-${Date.now().toString().slice(-4)}`;
+
+    // El folio lo asigna el servidor al registrar el lead. Antes se inventaba
+    // aquí uno de respaldo (`COT-` + 4 dígitos del reloj) que solo sobrevivía
+    // cuando la petición fallaba — o sea, justo cuando el lead NO quedó
+    // guardado: el cliente se llevaba por WhatsApp un folio inexistente (y con
+    // 4 dígitos se repetía cada 10 segundos). Si no hay folio, mejor no
+    // prometer ninguno.
+    let folio = "";
 
     try {
       const r = await fetch("/api/quote", {
@@ -84,7 +91,7 @@ export default function ContactForm() {
     }
 
     const msg =
-      `*NUEVA SOLICITUD ${folio}*\n` +
+      `*NUEVA SOLICITUD${folio ? ` ${folio}` : ""}*\n` +
       `Nombre: ${nombre}\n` +
       `Negocio: ${empresa}\n` +
       `Logística: ${zone}\n\n` +

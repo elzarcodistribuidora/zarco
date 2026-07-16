@@ -187,17 +187,22 @@ export default function CatalogApp() {
     setSending(true);
     let msg = `Hola Matriz El Zarco, soy *${user.name || user.email}*.\n\nSolicito la cotización formal de la siguiente requisición armada en el Portal B2B:\n\n`;
     let resumen = "";
+    // `resumen` es solo el texto legible del pedido. Los renglones van aparte y
+    // estructurados: /api/order cotiza el total contra la BD a partir de esto
+    // (parsear el resumen se rompía con los nombres que traen coma).
+    const orderItems: { codigo: string; nombre: string; cantidad: number }[] = [];
     cart.forEach((item, id) => {
       const total = item.price * item.qty;
       msg += `🔸 ${item.qty}x ${item.name} (Cod: ${id}) - $${mxn.format(total)}\n`;
       resumen += `${item.qty}x ${item.name} (${id}), `;
+      orderItems.push({ codigo: id, nombre: item.name, cantidad: item.qty });
     });
     msg += `\n*TOTAL ESTIMADO:* $${mxn.format(cartTotal.sum)} MXN\n\nQuedo a la espera de la confirmación operativa.`;
 
     try {
       const r = await fetch("/api/order", {
         method: "POST",
-        body: JSON.stringify({ resumen: resumen.slice(0, -2), total: cartTotal.sum }),
+        body: JSON.stringify({ resumen: resumen.slice(0, -2), items: orderItems }),
       });
       const result = await r.json();
       if (result.status === "Success") {

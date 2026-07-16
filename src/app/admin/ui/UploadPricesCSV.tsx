@@ -67,7 +67,18 @@ export function UploadPricesCSV() {
 
       const result = await res.json();
       if (res.ok) {
-        alert(`¡Éxito! Se procesaron ${result.processedCount} productos.`);
+        // La ruta ya distingue "escrito de verdad" de "no afectó ninguna fila"
+        // (código inexistente o RLS bloqueando), así que lo reportamos tal cual
+        // en vez de cantar éxito siempre.
+        let msg = `Se actualizaron ${result.processedCount} productos.`;
+        if (result.failedCount > 0) {
+          msg += `\n\n${result.failedCount} no se pudieron actualizar`;
+          if (result.failedCodigos?.length) {
+            msg += ` (revisa que el código exista): ${result.failedCodigos.join(', ')}`;
+            if (result.failedCount > result.failedCodigos.length) msg += '…';
+          }
+        }
+        alert(msg);
         window.location.reload();
       } else {
         alert(`Error: ${result.error || 'Ocurrió un problema al sincronizar.'}`);

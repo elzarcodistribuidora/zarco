@@ -29,6 +29,19 @@ cualquiera leía pedidos de cualquier email). Se migró a Supabase.
   `private.es_email_admin()` queda `role=admin`.
 - **Admins (por email):** `andrevalleo13@gmail.com` (dev) y
   `elzarcomayoreo@gmail.com` (negocio). Editar la lista en `private.es_email_admin()`.
+- **`requireAdmin()` para route handlers** (`src/lib/supabase/require-admin.ts`,
+  jul 2026): `proxy.ts` (ver Auth abajo) solo protege rutas que empiezan con
+  `/admin` — las de `/api/*` NO pasan por ahí, así que cada route handler que
+  debe ser solo-admin (`admin/export`, `admin/sync-prices`, `cord/create`)
+  tiene que llamar a este guard por su cuenta (verifica sesión + `role=admin`
+  contra `clientes`, igual que hace `layout.tsx` para las páginas de
+  `/admin`). Antes de esto, `sync-prices` solo comprobaba que hubiera sesión
+  (no que fuera admin) y `cord/create` no comprobaba nada — cualquier cliente
+  logueado podía sobrescribir precios de todo el catálogo, y cualquiera en
+  internet podía generar cotizaciones ilimitadas contra la API de pago de
+  Flouvia (`CORD_SECRET_KEY`). Los Server Actions de `admin/actions.ts` usan
+  su propio `requireAdmin()` basado en `throw` (conviene el flujo de
+  excepciones + `ActionState`), no este helper.
 
 ## Auth (Supabase, Google)
 - `@supabase/ssr` con sesión en cookies. `lib/supabase/{server,client,admin}.ts`.
@@ -58,9 +71,30 @@ cualquiera leía pedidos de cualquier email). Se migró a Supabase.
 - `revalidate/route.ts` — Webhook (token) → `revalidateTag("inventory","max")`.
 - `me/route.ts` — Identidad de la sesión (la consume `useZarcoAuth`/navbar).
 - `session/route.ts` — `userData` + `history` + `savedCart` (RLS).
+- `portal/route.ts` — Datos del dashboard de `/perfil` en un solo round-trip
+  (identidad + KPIs + producto estrella + historial con items + carrito
+  guardado); cliente sale de la sesión, nunca del body.
 - `order/route.ts` — Guarda pedido (EXIGE login) → `pedidos` + `pedido_items`.
+  El **total lo cotiza el servidor** contra `productos.precio_final` (snapshot
+  al momento del pedido) — el cliente manda `items` (código/nombre/cantidad,
+  acotado a `MAX_ITEMS`/`MAX_CANTIDAD`), nunca el total ni el precio; antes se
+  guardaba `body.total` tal cual, así que cualquiera podía mandar un pedido de
+  $0.01 con el carrito lleno. `resumen` (texto libre, va al CSV de
+  `admin/export` y al panel) se acota a 5000 caracteres.
 - `cart/route.ts` — Carrito en la nube (`savedCart`).
 - `quote/route.ts` — Lead del form de contacto (SIN login, service-role).
+- `admin/sync-prices/route.ts` — Actualización masiva de precios desde el CSV
+  del panel (`UploadPricesCSV.tsx`). Requiere `requireAdmin()`; valida cada
+  fila (código no vacío, precio finito ≥ 0) antes de escribir, detecta updates
+  que no afectaron ninguna fila (código inexistente) vía `.select()` en vez de
+  asumir éxito, y revalida `"inventory"` si algo se escribió.
+- `admin/export/route.ts` — Export a CSV (productos/clientes/pedidos/etc.)
+  desde el panel. Requiere `requireAdmin()`; escapa celdas que empiezan con
+  `=`/`+`/`-`/`@` (inyección de fórmulas de Excel/Sheets — varias columnas son
+  texto libre del usuario, ej. `pedidos.resumen`).
+- `cord/create/route.ts` — Genera una cotización con Flouvia (Cord) desde el
+  panel. Requiere `requireAdmin()` (gasta `CORD_SECRET_KEY` contra una API de
+  pago de terceros).
 
 Todas leen el email de la **sesión verificada** (cookies/RLS), nunca del
 body/cliente → cierra el hueco de seguridad que tenía el Apps Script viejo.

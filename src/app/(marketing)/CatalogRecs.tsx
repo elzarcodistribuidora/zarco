@@ -5,15 +5,18 @@ import { useEffect } from "react";
 /**
  * Recomendaciones del catálogo (cross-sell / upsell), montado SOLO en /catalogo.
  *
- * El catálogo es HTML/JS de Webflow; este componente NO renderiza en React, sino
- * que manipula el DOM (como PageScripts). Para ser robusto NO depende de poder
- * leer variables léxicas del JS de Webflow:
- *   - LEE el carrito de `localStorage.zarcoCartObjects` (el catálogo lo escribe
- *     en cada cambio vía saveCartToStorage).
- *   - DETECTA cambios con un MutationObserver sobre `#cartItemsList` (updateCartUI
- *     reescribe su contenido en cada cambio) + el evento `zarco:cart-updated`.
- *   - AGREGA vía el puente `window.zarcoCatalog.add` (→ handleProductSelection),
- *     que es una función global del catálogo.
+ * CatalogApp.tsx ya es React real (migrado jul 2026), pero este componente sigue
+ * siendo un componente hermano independiente (ver catalogo/page.tsx) que manipula
+ * el DOM directamente en vez de recibir props, para no acoplar el carrito a su
+ * propio ciclo de fetch/estado. Es robusto porque NO depende de leer variables
+ * lexicas de CatalogApp:
+ *   - LEE el carrito de `localStorage.zarcoCartObjects` (useCatalogCart lo
+ *     escribe ahí en cada cambio, vía persist()).
+ *   - DETECTA cambios con un MutationObserver sobre `#cartItemsList` (el drawer
+ *     de CatalogApp reescribe su contenido en cada cambio) + el evento
+ *     `zarco:cart-updated` (disparado por persist()).
+ *   - AGREGA vía el puente `window.zarcoCatalog.add` (→ addItem), que
+ *     useCatalogCart expone como función global.
  *
  * Las recomendaciones precalculadas vienen en /api/inventory (recs_comp para
  * cross-sell / complementos, recs_sim para upsell / similares).

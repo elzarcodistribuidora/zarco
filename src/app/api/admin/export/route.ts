@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/require-admin";
 
 // Escapar valores para CSV (comillas, saltos de línea, comas)
 function escapeCsv(val: any): string {
   if (val === null || val === undefined) return "";
-  const str = String(val);
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+  let str = String(val);
+
+  // Inyección de fórmulas: Excel/Sheets EJECUTAN una celda que empieza con
+  // = + - @ (o tab/CR). Varias columnas que exportamos son texto libre del
+  // usuario — `pedidos.resumen` viene del body de /api/order, y nombre/email
+  // salen del perfil de Google — así que un cliente podía plantar
+  // `=HYPERLINK(...)` en un pedido y dispararlo al abrir el CSV.
+  // Anteponer un apóstrofo fuerza a que la celda se lea como texto.
+  if (/^[=+\-@\t\r]/.test(str)) str = "'" + str;
+
+  if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
@@ -19,19 +28,9 @@ export async function GET(request: Request) {
     return new NextResponse("Invalid type", { status: 400 });
   }
 
-  const supabase = await createClient();
-  
-  // Check admin
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new NextResponse("Unauthorized", { status: 401 });
-  
-  const { data: cliente } = await supabase
-    .from("clientes")
-    .select("role")
-    .eq("auth_user_id", user.id)
-    .single();
-    
-  if (cliente?.role !== "admin") return new NextResponse("Forbidden", { status: 403 });
+  const guard = await requireAdmin();
+  if (!guard.ok) return new NextResponse(guard.error, { status: guard.status });
+  const supabase = guard.supabase;
 
   let data: any[] | null = [];
   let headers: string[] = [];

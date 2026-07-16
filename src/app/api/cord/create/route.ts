@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/require-admin";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
+    // Esta ruta gasta CORD_SECRET_KEY contra la API de Flouvia (servicio de
+    // pago) — sin guard, cualquiera en internet podía crear cotizaciones
+    // ilimitadas a nuestro nombre. Solo la llama el panel admin.
+    const guard = await requireAdmin();
+    if (!guard.ok) {
+      return NextResponse.json({ error: guard.error }, { status: guard.status });
+    }
+
     const body = await req.json();
-    const { leadId, negocio, email, mensaje, items: bodyItems } = body;
+    const { negocio, email, mensaje, items: bodyItems } = body;
 
     const CORD_SECRET_KEY = process.env.CORD_SECRET_KEY;
     if (!CORD_SECRET_KEY) {
@@ -63,7 +70,8 @@ export async function POST(req: Request) {
     }
 
     // (Opcional) Guardar el token de la cotización en Supabase asociado al lead
-    // await supabase.from("cotizaciones").update({ cord_token: quoteToken }).eq("id", leadId);
+    // (`body.leadId`, que hoy se ignora):
+    // await guard.supabase.from("cotizaciones").update({ cord_token: quoteToken }).eq("id", body.leadId);
 
     return NextResponse.json({ token: quoteToken });
   } catch (error: any) {
